@@ -13,12 +13,12 @@
 | Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element0](../Images/Element22.jpg) | 0 | 8 | |
 | Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element0](../Images/Element21.jpg) | 0 | 8 | |
 | Element25 | Textured Background (Green) | ![Element25](../Images/Element25.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element26 | Straight Arrow (Green Textured) | ![Element26](../Images/Element26.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element27 | Curved Arrow Right (Green Textured) | ![Element27](../Images/Element27.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element28 | Curved Arrow Round Pivot (Green Textured) | ![Element28](../Images/Element28.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element29 | Vortex (Green Textured) | ![Element29](../Images/Element29.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element31 | Gear with Green Rotation Arrows | ![Element31](../Images/Element31.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 16 | |
-| Element32 | Gear with Red Rotation Arrows | ![Element32](../Images/Element32.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 16 | |
+| Element26 | Straight Arrow (Green Textured) | ![Element26](../Images/Element26.jpg) | ![Element25](../Images/Element25.jpg) | 0 | | 2|
+| Element27 | Curved Arrow Right (Green Textured) | ![Element27](../Images/Element27.jpg) | ![Element28](../Images/Element28.jpg) | 0 | | 2|
+| Element28 | Curved Arrow Round Pivot (Green Textured) | ![Element28](../Images/Element28.jpg) | ![Element27](../Images/Element27.jpg) | 0 | |2 |
+| Element29 | Vortex (Green Textured) | ![Element29](../Images/Element29.jpg) | ![Element25](../Images/Element25.jpg) | 0 | | 1 |
+| Element31 | Gear with Green Rotation Arrows | ![Element31](../Images/Element31.jpg) | ![Element32](../Images/Element32.jpg) | 0 | 16 |  |
+| Element32 | Gear with Red Rotation Arrows | ![Element32](../Images/Element32.jpg) | ![Element31](../Images/Element31.jpg) | 0 | 16 |  |
 | Element33 | Vortex Portal | ![Element33](../Images/Later/Element33.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element34 | Electrical Hazard Panel | ![Element34](../Images/Element34.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | |
 | Element40 | Pit | ![Element40](../Images/Element40.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | |
@@ -29,7 +29,7 @@
 | Element57 | Water Curved Arrow Right | ![Element57](../Images/Element57.jpg) | ![Element0](../Images/Element58.jpg) | 0 | 2 | |
 | Element58 | Water Curved Arrow Round Pivot | ![Element58](../Images/Element58.jpg) | ![Element57](../Images/Element57.jpg) | 0 | 2 | |
 | Element59 | Water Vortex | ![Element59](../Images/Element59.jpg) | ![Element0](../Images/Element55.jpg) | 0 | 1 | |
-| Element61 | Lightning Burst | ![Element61](../Images/Element61.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
+| Element61 | Lightning Burst | ![Element61](../Images/Element61.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 2 | |
 | Element70 | Control Dial | ![Element70](../Images/Later/Element70.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element80 | Fire / Explosion | ![Element80](../Images/Later/Element80.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element92 | Tool Kit | ![Element92](../Images/Element92.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 5 | |
@@ -42,17 +42,17 @@
 | Element0b | Plain Metal Plate (Variant B) | ![Element0b](../Images/Later/Element0b.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element0c | Plain Metal Plate (Variant C) | ![Element0c](../Images/Later/Element0c.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element0d | Plain Metal Plate (Variant D) | ![Element0d](../Images/Later/Element0d.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element23a | Three-Way Arrow (Blue) | ![Element23a](../Images/Later/Element23a.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element23b | Multi-Directional Arrow (Blue) | ![Element23b](../Images/Later/Element23b.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element23c | Complex Multi-Direction (Blue) | ![Element23c](../Images/Later/Element23c.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
+| Element23a | Three-Way Arrow (Blue) | ![Element23a](../Images/Later/Element23a.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | 4 |
+| Element23b | Multi-Directional Arrow (Blue) | ![Element23b](../Images/Later/Element23b.jpg) | ![Element23c](../Images/Later/Element23c.jpg) | 0 | | 4 |
+| Element23c | Complex Multi-Direction (Blue) | ![Element23c](../Images/Later/Element23c.jpg) | ![Element23b](../Images/Later/Element23b.jpg) | 0 | | 4 |
 | Element35a | Hexagon Orange (Red Corner Nodes) | ![Element35a](../Images/Later/Element35a.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element35b | Hexagon Purple (Purple Corner Nodes) | ![Element35b](../Images/Later/Element35b.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element35c | Hexagon Green (Green Corner Nodes) | ![Element35c](../Images/Later/Element35c.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element35d | Hexagon Blue (Blue Corner Nodes) | ![Element35d](../Images/Later/Element35d.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element41a | Connector Puzzle Piece (Even Positions) | ![Element41a](../Images/Later/Element41a.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element41b | Connector Puzzle Piece (Odd Positions) | ![Element41b](../Images/Later/Element41b.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element50x | Water Curved Arrow (Variant A) | ![Element50x](../Images/Later/Element50x.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element50x2 | Water Curved Arrow (Variant B) | ![Element50x2](../Images/Later/Element50x2.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
-| Element50x3 | Water Three-Way Arrow | ![Element50x3](../Images/Later/Element50x3.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
+| Element50x | Water Curved Arrow (Variant A) | ![Element50x](../Images/Later/Element50x.jpg) | ![Element50x2](../Images/Later/Element50x2.jpg) | 0 | | 4 |
+| Element50x2 | Water Curved Arrow (Variant B) | ![Element50x2](../Images/Later/Element50x2.jpg) | ![Element50x](../Images/Later/Element50x.jpg) | 0 | | 4 |
+| Element50x3 | Water Three-Way Arrow | ![Element50x3](../Images/Later/Element50x3.jpg) | ![Element55](../Images/Element55.jpg) | 0 | | 4 |
 | Element81a | Toxic Gas Cloud | ![Element81a](../Images/Later/Element81a.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element81b | Toxic Gas Cloud (Defined) | ![Element81b](../Images/Later/Element81b.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
