@@ -3,7 +3,7 @@
 
 plate_w = 2 + 7/8;
 plate_d = 2 + 7/8;
-plate_h = 1/8;
+plate_h = 1/16;
 
 hole_d = 3/32;
 hole_r = hole_d / 2;
