@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(py apply_reduced_palette.py)",
+      "Bash(py extract_colors_reduced.py)",
+      "Bash(py generate_rivet_plate.py)"
+    ]
+  }
+}
