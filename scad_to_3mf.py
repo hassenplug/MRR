@@ -1,10 +1,16 @@
 """
 scad_to_3mf.py
-Converts a colored OpenSCAD file into a Bambu Studio-compatible multi-color 3MF.
-Each color() call in the SCAD file becomes a separate part assigned to its own filament slot.
+Converts one or two colored OpenSCAD files into a Bambu Studio-compatible multi-color 3MF.
+Each color() call becomes a separate part assigned to its own filament slot.
+All parts are sub-volumes of a single parent object so Bambu keeps them in the same
+coordinate system (no independent drop-to-plate per color).
 
 Usage:
     py -3.12 scad_to_3mf.py <input.scad> [output.3mf]
+    py -3.12 scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>
+
+Two-file mode: bottom is rendered at z=0, its height is measured, then top geometry
+is shifted up by that amount so the two layers sit flush against each other.
 """
 
 import os
@@ -57,6 +63,21 @@ def export_stl(scad_source, stl_path):
         os.unlink(tmp_scad)
 
 
+def max_z(triangles):
+    """Return the maximum Z coordinate across all triangle vertices."""
+    return max(v[2] for tri in triangles for v in tri)
+
+
+def offset_z(triangles, z):
+    """Return triangles with all Z coordinates shifted by z."""
+    return tuple(
+        ((v0[0], v0[1], v0[2] + z),
+         (v1[0], v1[1], v1[2] + z),
+         (v2[0], v2[1], v2[2] + z))
+        for v0, v1, v2 in triangles
+    )
+
+
 def read_binary_stl(stl_path):
     """Read a binary or ASCII STL; return list of (v0, v1, v2) vertex triples."""
     data = Path(stl_path).read_bytes()
@@ -94,12 +115,16 @@ def read_binary_stl(stl_path):
 
 def build_3mf(parts, output_path):
     """
-    Build a Bambu Studio-compatible 3MF.
+    Build a Bambu Studio-compatible multi-color 3MF.
     parts: list of (color_name, triangles)
           triangles: list of (v0, v1, v2) where each vi is (x, y, z)
+
+    Structure: one parent object (id=1) references sub-objects (id=2..N+1) as
+    components.  All volumes share the same coordinate system so Bambu Studio
+    won't independently drop each color to the build plate.
     """
 
-    def object_xml(obj_id, color_name, triangles):
+    def mesh_object_xml(obj_id, color_name, triangles):
         rows_v = []
         rows_t = []
         for i, (v0, v1, v2) in enumerate(triangles):
@@ -121,40 +146,53 @@ def build_3mf(parts, output_path):
             f'    </object>'
         )
 
-    objects = "\n".join(
-        object_xml(i, name, tris) for i, (name, tris) in enumerate(parts, 1)
+    # Sub-objects start at id=2; parent wrapper is id=1
+    sub_ids = list(range(2, len(parts) + 2))
+    identity = "1 0 0 0 1 0 0 0 1 0 0 0"
+    components = "\n".join(
+        f'      <component objectid="{oid}" transform="{identity}"/>'
+        for oid in sub_ids
     )
-    items = "\n".join(
-        f'    <item objectid="{i}" printable="1"/>' for i in range(1, len(parts) + 1)
+    parent_object = (
+        f'    <object id="1" type="model" name="model">\n'
+        f'      <components>\n'
+        f'{components}\n'
+        f'      </components>\n'
+        f'    </object>'
+    )
+    sub_objects = "\n".join(
+        mesh_object_xml(oid, name, tris)
+        for oid, (name, tris) in zip(sub_ids, parts)
     )
 
     model_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<model unit="millimeter" xml:lang="en-US"
+<model unit="inch" xml:lang="en-US"
     xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
   <resources>
-{objects}
+{sub_objects}
+{parent_object}
   </resources>
   <build>
-{items}
+    <item objectid="1" printable="1"/>
   </build>
 </model>"""
 
-    # Bambu model_settings.config: assigns each part to a filament/extruder slot
-    obj_configs = []
-    for i, (name, _) in enumerate(parts, 1):
-        obj_configs.append(
-            f'  <object id="{i}" instances_count="1">\n'
-            f'    <metadata key="name" value="{name}"/>\n'
-            f'    <part id="{i}" subtype="normal_part">\n'
+    # Bambu model_settings.config: one object entry with one part per color volume
+    part_configs = []
+    for slot, (oid, (name, _)) in enumerate(zip(sub_ids, parts), 1):
+        part_configs.append(
+            f'    <part id="{oid}" subtype="normal_part">\n'
             f'      <metadata key="name" value="{name}"/>\n'
-            f'      <metadata key="extruder" value="{i}"/>\n'
-            f'    </part>\n'
-            f'  </object>'
+            f'      <metadata key="extruder" value="{slot}"/>\n'
+            f'    </part>'
         )
     settings_xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n<config>\n'
-        + "\n".join(obj_configs)
-        + "\n</config>"
+        f'  <object id="1" instances_count="1">\n'
+        f'    <metadata key="name" value="model"/>\n'
+        + "\n".join(part_configs) + "\n"
+        f'  </object>\n'
+        '</config>'
     )
 
     content_types = (
@@ -180,47 +218,95 @@ def build_3mf(parts, output_path):
         zf.writestr("Metadata/model_settings.config", settings_xml)
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: py -3.12 scad_to_3mf.py <input.scad> [output.3mf]")
-        sys.exit(1)
-
-    scad_path = Path(sys.argv[1]).resolve()
-    out_path = Path(sys.argv[2]) if len(sys.argv) > 2 else scad_path.with_suffix(".3mf")
-
-    print(f"Input:  {scad_path}")
-    print(f"Output: {out_path}")
-
+def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
+    """
+    Render each color from scad_path into STLs inside tmpdir.
+    Returns list of (label, triangles) and the max Z across all parts.
+    If z_offset > 0, shifts all triangles up by that amount.
+    """
     colors = find_colors(scad_path)
     if not colors:
-        print("No color() calls found. Exporting as single-color 3MF.")
-        colors = ["default"]
+        print("  No color() calls found — skipping.")
+        return [], 0.0
 
-    print(f"Colors found: {colors}\n")
+    parts = []
+    top_z = 0.0
+    for color in colors:
+        stl_path = Path(tmpdir) / f"{prefix}_{color}.stl"
+        print(f"  Rendering '{color}' ...", end=" ", flush=True)
+        scad_src = make_filter_scad(str(scad_path), color)
+        ok = export_stl(scad_src, stl_path)
+        if not ok or not stl_path.exists():
+            print("FAILED (skipped)")
+            continue
+        triangles = read_binary_stl(stl_path)
+        if not triangles:
+            print("0 triangles (skipped)")
+            continue
+        if z_offset:
+            triangles = offset_z(triangles, z_offset)
+        z = max_z(triangles)
+        if z > top_z:
+            top_z = z
+        print(f"{len(triangles):,} triangles")
+        parts.append((f"{prefix}_{color}", triangles))
+    return parts, top_z
+
+
+def main():
+    two_file_mode = len(sys.argv) == 4
+
+    if len(sys.argv) < 2 or len(sys.argv) > 4:
+        print("Usage:")
+        print("  scad_to_3mf.py <input.scad> [output.3mf]")
+        print("  scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>")
+        sys.exit(1)
+
+    if two_file_mode:
+        top_path    = Path(sys.argv[1]).resolve()
+        bottom_path = Path(sys.argv[2]).resolve()
+        out_path    = Path(sys.argv[3])
+        print(f"Top:    {top_path}")
+        print(f"Bottom: {bottom_path}")
+        print(f"Output: {out_path}\n")
+    else:
+        scad_path = Path(sys.argv[1]).resolve()
+        out_path  = Path(sys.argv[2]) if len(sys.argv) > 2 else scad_path.with_suffix(".3mf")
+        print(f"Input:  {scad_path}")
+        print(f"Output: {out_path}\n")
 
     parts = []
     with tempfile.TemporaryDirectory() as tmpdir:
-        for color in colors:
-            stl_path = Path(tmpdir) / f"{color}.stl"
-            print(f"Rendering '{color}' ...", end=" ", flush=True)
+        if two_file_mode:
+            print("--- Bottom ---")
+            bottom_parts, bottom_height = render_colors(bottom_path, tmpdir, "bottom")
+            parts.extend(bottom_parts)
+            print(f"\nBottom height: {bottom_height:.6f} — top will be raised by this amount\n")
 
-            if color == "default":
-                scad_src = scad_path.read_text(encoding="utf-8")
-            else:
-                scad_src = make_filter_scad(str(scad_path), color)
-
-            ok = export_stl(scad_src, stl_path)
-            if not ok or not stl_path.exists():
-                print("FAILED (skipped)")
-                continue
-
-            triangles = read_binary_stl(stl_path)
-            if not triangles:
-                print(f"0 triangles (skipped)")
-                continue
-
-            print(f"{len(triangles):,} triangles")
-            parts.append((color, triangles))
+            print("--- Top ---")
+            top_parts, _ = render_colors(top_path, tmpdir, "top", z_offset=bottom_height)
+            parts.extend(top_parts)
+        else:
+            colors = find_colors(scad_path)
+            if not colors:
+                print("No color() calls found. Exporting as single-color 3MF.")
+                colors = ["default"]
+            print(f"Colors found: {colors}\n")
+            for color in colors:
+                stl_path = Path(tmpdir) / f"{color}.stl"
+                print(f"Rendering '{color}' ...", end=" ", flush=True)
+                scad_src = (scad_path.read_text(encoding="utf-8") if color == "default"
+                            else make_filter_scad(str(scad_path), color))
+                ok = export_stl(scad_src, stl_path)
+                if not ok or not stl_path.exists():
+                    print("FAILED (skipped)")
+                    continue
+                triangles = read_binary_stl(stl_path)
+                if not triangles:
+                    print("0 triangles (skipped)")
+                    continue
+                print(f"{len(triangles):,} triangles")
+                parts.append((color, triangles))
 
     if not parts:
         print("No geometry produced. Check your SCAD file.")
