@@ -131,7 +131,7 @@ module gear_label() {
     color("green")
     translate([plate_w / 2, plate_d / 2, 0])
     linear_extrude(plate_h + 0.002)
-    text("?", size = 1.1, halign = "center", valign = "center",
+    text("8", size = 1.1, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
 

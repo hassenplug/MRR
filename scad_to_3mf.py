@@ -78,6 +78,19 @@ def offset_z(triangles, z):
     )
 
 
+def flip_z(triangles):
+    """Flip triangles so the top face (max Z) lies at z=0.
+    Reverses winding order so outward normals remain correct after the flip."""
+    h = max_z(triangles)
+    result = []
+    for v0, v1, v2 in triangles:
+        nv0 = (v0[0], v0[1], h - v0[2])
+        nv1 = (v1[0], v1[1], h - v1[2])
+        nv2 = (v2[0], v2[1], h - v2[2])
+        result.append((nv2, nv1, nv0))  # reversed winding fixes normals
+    return result
+
+
 def read_binary_stl(stl_path):
     """Read a binary or ASCII STL; return list of (v0, v1, v2) vertex triples."""
     data = Path(stl_path).read_bytes()
@@ -278,8 +291,9 @@ def main():
     parts = []
     with tempfile.TemporaryDirectory() as tmpdir:
         if two_file_mode:
-            print("--- Bottom ---")
+            print("--- Bottom (will be flipped) ---")
             bottom_parts, bottom_height = render_colors(bottom_path, tmpdir, "bottom")
+            bottom_parts = [(name, flip_z(tris)) for name, tris in bottom_parts]
             parts.extend(bottom_parts)
             print(f"\nBottom height: {bottom_height:.6f} — top will be raised by this amount\n")
 
