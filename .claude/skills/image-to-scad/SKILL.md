@@ -57,7 +57,7 @@ inset_y   = spacing_y / 2;
    - Use `offset(delta = -thickness)` to create outline-only versions of shapes
    - For diagonal hazard stripes: use rotated rectangles clipped to the tile area
 
-5. **Determine the output filename** from the image name (e.g., `Images/Element10.jpg` → `aaron/element10.scad`) and write the file there.
+5. **Determine the output filename** from the image name (e.g., `Images/Element10.jpg` → `aaron/element10.scad`) and write the file there. Use `Glob` to find the actual file if the argument has a typo.
 
 6. **Show the user** a summary of what visual elements you detected and how you mapped them to geometry.
 
@@ -114,3 +114,150 @@ module rollers() {
 ```
 
 **Rivet border avoidance:** When a feature fills the whole plate, avoid the rivet zone by inlining a `rivet_holes()` subtraction inside the feature's `difference()`.
+
+---
+
+**Curved belt arc (quarter-circle conveyor turn):**
+
+Identify which corner has the "empty" bare-plate area — the arc center goes there. The belt arc is an annular sector (ring slice) clipped to the tile. Use these helpers:
+
+```openscad
+// arc_cx, arc_cy = corner coordinates (e.g. plate_w, plate_d for top-right corner)
+// arc_a1, arc_a2 = start/end angles (e.g. 180, 270 for the lower-left quadrant)
+// arc_r_out, arc_r_in = outer/inner radii of the belt
+
+module fan_2d(r, a1, a2) {
+    // Pie-slice from a1 to a2 degrees — used to clip annular sectors
+    polygon(concat([[0, 0]], [for (a = [a1:1:a2]) [r * cos(a), r * sin(a)]]));
+}
+
+module annular_sector_2d(r_outer, r_inner, a1, a2) {
+    intersection() {
+        difference() {
+            circle(r = r_outer, $fn = 120);
+            circle(r = r_inner, $fn = 120);
+        }
+        fan_2d(r_outer + 0.5, a1, a2);
+    }
+}
+
+module belt_arc_cutout() {
+    translate([0, 0, -0.001])
+    linear_extrude(plate_h + 0.002)
+    translate([arc_cx, arc_cy])
+        annular_sector_2d(arc_r_out, arc_r_in, arc_a1, arc_a2);
+}
+
+module belt_arc() {
+    color("black")
+    intersection() {
+        linear_extrude(plate_h)
+        translate([arc_cx, arc_cy])
+            annular_sector_2d(arc_r_out, arc_r_in, arc_a1, arc_a2);
+        cube([plate_w, plate_d, plate_h]);  // clip to tile bounds
+    }
+}
+```
+
+**Curved radial rollers (along a belt arc):**
+
+Rollers are stadium shapes rotated so their long axis points toward the arc center.
+`rotate([0, 0, theta])` aligns the hull's ±x axis with the radial direction at angle `theta`.
+
+```openscad
+// roller_r_mid = arc_r_in + (arc_r_out - arc_r_in) * 0.45  (midpoint of belt)
+// roller_len   = (arc_r_out - arc_r_in) * 0.62             (radial length)
+module curved_rollers() {
+    span = arc_a2 - arc_a1 - 10;  // stay 5° inside each end
+    color("green")
+    for (i = [0:roller_count - 1]) {
+        theta = arc_a1 + 5 + span * i / (roller_count - 1);
+        cx = arc_cx + roller_r_mid * cos(theta);
+        cy = arc_cy + roller_r_mid * sin(theta);
+        translate([cx, cy, 0])
+        rotate([0, 0, theta])   // long axis = radial direction
+        hull() {
+            translate([-roller_len/2, 0, 0]) cylinder(h=plate_h, r=roller_r_cap, $fn=20);
+            translate([ roller_len/2, 0, 0]) cylinder(h=plate_h, r=roller_r_cap, $fn=20);
+        }
+    }
+}
+```
+
+**Curved hollow arrow (directional arc arrow):**
+
+The belt moves CLOCKWISE when the arrowhead points "upward" at the arc's left/upper end.
+Key rotation formula: `rotate([0, 0, theta - 180])` orients an arrowhead (whose tip points in +y) to the clockwise tangent direction at angle `theta` from the arc center.
+
+```openscad
+// arrow_a1 = arrowhead end angle (where belt exits)
+// arrow_a2 = tail end angle (where belt enters)
+module curved_arrow() {
+    r_o = arrow_r_mid + arrow_half_w;
+    r_i = arrow_r_mid - arrow_half_w;
+    color([0.40, 1.00, 0.10])  // yellow-green
+    linear_extrude(plate_h + 0.001)
+    translate([arc_cx, arc_cy])
+    union() {
+        // Hollow arc outline (stroke on outer + inner edges, open interior)
+        difference() {
+            annular_sector_2d(r_o,               r_i,               arrow_a1, arrow_a2);
+            annular_sector_2d(r_o - arrow_stroke, r_i + arrow_stroke, arrow_a1, arrow_a2);
+        }
+        // Arrowhead triangle — rotate([0,0, arrow_a1 - 180]) = clockwise tangent at arrow_a1
+        translate([arrow_r_mid * cos(arrow_a1), arrow_r_mid * sin(arrow_a1)])
+        rotate([0, 0, arrow_a1 - 180])
+        polygon([[0, arrow_head_h], [-arrow_head_w/2, 0], [arrow_head_w/2, 0]]);
+    }
+}
+```
+
+**Spur gear:**
+
+Model with a base circle at root radius plus N trapezoidal tooth polygons. Subtract the bore. Add a lighter fill circle for the open interior.
+
+```openscad
+gear_n      = 20;    // number of teeth
+gear_r_tip  = 1.18;  // outer radius at tooth tips
+gear_r_root = 1.00;  // root radius (base of teeth)
+gear_r_bore = 0.62;  // bore (inner hole) radius
+tooth_hw    = 4.5;   // half-angle per tooth in degrees
+                     // total tooth width = 2*tooth_hw; gap = pitch - 2*tooth_hw
+                     // equal teeth & gaps → tooth_hw = (360/n_teeth)/4
+
+module gear_tooth_2d() {
+    // Single trapezoidal tooth pointing in +x direction
+    polygon([
+        [gear_r_root * cos(-tooth_hw),        gear_r_root * sin(-tooth_hw)],
+        [gear_r_tip  * cos(-tooth_hw * 0.80), gear_r_tip  * sin(-tooth_hw * 0.80)],
+        [gear_r_tip  * cos( tooth_hw * 0.80), gear_r_tip  * sin( tooth_hw * 0.80)],
+        [gear_r_root * cos( tooth_hw),        gear_r_root * sin( tooth_hw)],
+    ]);
+}
+
+module gear_2d() {
+    union() {
+        circle(r = gear_r_root, $fn = gear_n * 8);
+        for (i = [0:gear_n - 1])
+            rotate([0, 0, i * (360 / gear_n)]) gear_tooth_2d();
+    }
+}
+
+module gear() {
+    color("black")
+    translate([plate_w / 2, plate_d / 2, 0])
+    linear_extrude(plate_h)
+    difference() {
+        gear_2d();
+        circle(r = gear_r_bore, $fn = 80);
+    }
+}
+
+module gear_bore() {
+    // Lighter fill reveals interior (sits on top of plate)
+    color([0.80, 0.80, 0.80])
+    translate([plate_w / 2, plate_d / 2, 0])
+    linear_extrude(plate_h + 0.001)
+    circle(r = gear_r_bore - 0.001, $fn = 80);
+}
+```
