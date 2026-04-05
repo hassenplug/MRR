@@ -28,10 +28,15 @@ module rivet_holes() {
         translate([inset_x, inset_y + i * spacing_y, -1])
             cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
 
+/*
     // Right edge
     for (i = [0:9])
         translate([plate_w - inset_x, inset_y + i * spacing_y, -1])
             cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
+*/
+    // Upper-right corner rivet
+    translate([plate_w - inset_x, plate_d - inset_y, -1])
+        cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
 }
 
 rivet_h = plate_h;
@@ -58,10 +63,15 @@ module rivets() {
             translate([inset_x, inset_y + i * spacing_y, 0])
                 cylinder(h = rivet_h, r = hole_r, $fn = 20);
 
+/*
         // Right edge
         for (i = [0:9])
             translate([plate_w - inset_x, inset_y + i * spacing_y, 0])
                 cylinder(h = rivet_h, r = hole_r, $fn = 20);
+*/
+        // Upper-right corner rivet
+        translate([plate_w - inset_x, plate_d - inset_y, 0])
+            cylinder(h = rivet_h, r = hole_r, $fn = 20);
     }
 }
 
@@ -85,9 +95,35 @@ roller_r_mid = (roller_r_lo + roller_r_hi) / 2;
 
 belt_w = 1.5;
 
+belt_r_inner = roller_r_mid - belt_w / 2;
+belt_r_outer = roller_r_mid + belt_w / 2;
+
+// Quarter-ring from 180° to 270° in arc-local coordinates (third quadrant)
+// plus rectangular extensions to reach the plate edges
+module belt_ring_2d() {
+    big = belt_r_outer + 1;
+    union() {
+        // Curved quarter-ring
+        intersection() {
+            difference() {
+                circle(r = belt_r_outer, $fn = 80);
+                circle(r = belt_r_inner, $fn = 80);
+            }
+            polygon([[0, 0], [-big, 0], [-big, -big], [0, -big]]);
+        }
+        // Top extension: from 180° end up to plate top edge
+        translate([-belt_r_outer, 0])
+            square([belt_w, rivet_inset]);
+        // Right extension: from 270° end out to plate right edge
+        translate([0, -belt_r_outer])
+            square([rivet_inset, belt_w]);
+    }
+}
+
 module belt_cutout() {
-    translate([(plate_w - belt_w) / 2, -0.001, -0.001])
-        cube([belt_w, plate_d + 0.002, plate_h + 0.002]);
+    translate([arc_cx, arc_cy, -0.001])
+    linear_extrude(plate_h + 0.002)
+    belt_ring_2d();
 }
 
 module roller_slots() {
@@ -130,33 +166,41 @@ module plate() {
             cube([plate_w, plate_d, plate_h]);
         rivet_holes();
         roller_slots();
-        //belt_cutout();
+        belt_cutout();
     }
 }
 
 module rollers() {
-    for (i = [0:roller_count - 1]) {
-        a = arc_a_start + roller_gap_a * i;
-        translate([arc_cx, arc_cy, 0])
-        rotate([0, 0, a]) {
-            // Inner half (closer to arc center) — red; only first, middle, last
-            if (i == 0 || i == floor((roller_count - 1) / 2) || i == roller_count - 1)
-            color("red")
-            hull() {
-                translate([roller_r_lo + roller_r, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([roller_r_mid, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-            }
-            // Outer half (farther from arc center) — blue
-            color("blue")
-            hull() {
-                translate([roller_r_mid, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([roller_r_hi - roller_r, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+    difference() {
+        union() {
+            for (i = [0:roller_count - 1]) {
+                a = arc_a_start + roller_gap_a * i;
+                translate([arc_cx, arc_cy, 0])
+                rotate([0, 0, a]) {
+                    // Inner half (closer to arc center) — red; only first, middle, last
+                    if (i == 0 || i == floor((roller_count - 1) / 2) || i == roller_count - 1)
+                    color("red")
+                    hull() {
+                        translate([roller_r_lo + roller_r, 0, 0])
+                            cylinder(h = plate_h, r = roller_r, $fn = 20);
+                        translate([roller_r_mid, 0, 0])
+                            cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    }
+                    // Outer half (farther from arc center) — blue
+                    color("blue")
+                    hull() {
+                        translate([roller_r_mid, 0, 0])
+                            cylinder(h = plate_h, r = roller_r, $fn = 20);
+                        translate([roller_r_hi - roller_r, 0, 0])
+                            cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    }
+                }
             }
         }
+        // Subtract belt area so rollers don't bleed into the belt
+        translate([arc_cx, arc_cy, -0.001])
+        linear_extrude(plate_h + 0.002)
+        belt_ring_2d();
     }
 }
 
@@ -201,8 +245,9 @@ module arrow() {
 module belt() {
     color("black")
     difference() {
-        translate([(plate_w - belt_w) / 2, 0, 0])
-            cube([belt_w, plate_d, plate_h]);
+        translate([arc_cx, arc_cy, 0])
+        linear_extrude(plate_h)
+        belt_ring_2d();
         arrow_cutout();
     }
 }
@@ -211,5 +256,5 @@ frame();
 plate();
 rivets();
 rollers();
-//belt();
-//arrow();
+belt();
+arrow();
