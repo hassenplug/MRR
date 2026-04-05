@@ -102,6 +102,28 @@ module roller_slots() {
     }
 }
 
+belt_w = 1.75;
+belt_d = 2 + 13/16;
+
+module rollers() {
+    roller_x_start = 2 * roller_inset_x;
+    roller_x_end   = plate_w - 2 * roller_inset_x;
+
+    color("green")
+    difference() {
+        for (i = [0:roller_count - 1]) {
+            cy = roller_inset_y + roller_gap + roller_r + i * (roller_h_size + roller_gap);
+            hull() {
+                translate([roller_x_start + roller_r, cy, 0])
+                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                translate([roller_x_end - roller_r, cy, 0])
+                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+            }
+        }
+        belt_cutout();
+    }
+}
+
 module frame() {
     color("black")
     difference() {
@@ -112,16 +134,72 @@ module frame() {
     }
 }
 
+module belt_cutout() {
+    translate([(plate_w - belt_w) / 2, -0.001, -0.001])
+        cube([belt_w, plate_d + 0.002, plate_h + 0.002]);
+}
+
 module plate() {
     difference() {
         color("darkgray")
             cube([plate_w, plate_d, plate_h]);
         rivet_holes();
         roller_slots();
+        belt_cutout();
+    }
+}
+
+arrow_h       = 3/4 * plate_d;
+arrow_w       = belt_w * 0.9;
+arrow_outline = 1/8;
+arrow_head_h  = arrow_h * 0.4;
+arrow_shaft_h = arrow_h - arrow_head_h;
+arrow_shaft_w = arrow_w * 0.4;
+
+module arrow_2d() {
+    polygon([
+        [-arrow_shaft_w/2, 0],
+        [ arrow_shaft_w/2, 0],
+        [ arrow_shaft_w/2, arrow_shaft_h],
+        [ arrow_w/2,       arrow_shaft_h],
+        [ 0,               arrow_h],
+        [-arrow_w/2,       arrow_shaft_h],
+        [-arrow_shaft_w/2, arrow_shaft_h]
+    ]);
+}
+
+module arrow_cutout() {
+    translate([plate_w/2, (plate_d - arrow_h)/2, -0.001])
+    linear_extrude(plate_h + 0.002)
+    difference() {
+        arrow_2d();
+        offset(delta = -arrow_outline) arrow_2d();
+    }
+}
+
+module arrow() {
+    color("green")
+    translate([plate_w/2, (plate_d - arrow_h)/2, 0])
+    linear_extrude(plate_h)
+    difference() {
+        arrow_2d();
+        offset(delta = -arrow_outline) arrow_2d();
+    }
+}
+
+module belt() {
+    color("black")
+    difference() {
+        translate([(plate_w - belt_w) / 2, 0, 0])
+            cube([belt_w, plate_d, plate_h]);
+        arrow_cutout();
     }
 }
 
 frame();
 plate();
 rivets();
+rollers();
+belt();
+arrow();
 
