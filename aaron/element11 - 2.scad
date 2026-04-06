@@ -177,17 +177,17 @@ module rollers() {
                 a = arc_a_start + roller_gap_a * i;
                 translate([arc_cx, arc_cy, 0])
                 rotate([0, 0, a]) {
-                    // Inner half (closer to arc center) — red; only first, middle, last
+                    // Inner half (closer to arc center) — green; only first, middle, last
                     if (i == 0 || i == floor((roller_count - 1) / 2) || i == roller_count - 1)
-                    color("red")
+                    color("green")
                     hull() {
                         translate([roller_r_lo + roller_r, 0, 0])
                             cylinder(h = plate_h, r = roller_r, $fn = 20);
                         translate([roller_r_mid, 0, 0])
                             cylinder(h = plate_h, r = roller_r, $fn = 20);
                     }
-                    // Outer half (farther from arc center) — blue
-                    color("blue")
+                    // Outer half (farther from arc center) — green
+                    color("green")
                     hull() {
                         translate([roller_r_mid, 0, 0])
                             cylinder(h = plate_h, r = roller_r, $fn = 20);
@@ -205,41 +205,56 @@ module rollers() {
 }
 
 arrow_w       = belt_w * 0.75;
-arrow_h       = 1/2 * plate_d;
 arrow_outline = 1/16;
 arrow_head_h  = arrow_w / 2;
 arrow_shaft_w = arrow_w * 0.4;
-arrow_shaft_h = arrow_h - arrow_head_h;
 
-module arrow_2d() {
-    polygon([
-        [-arrow_shaft_w/2, 0],
-        [ arrow_shaft_w/2, 0],
-        [ arrow_shaft_w/2, arrow_shaft_h],
-        [ arrow_w/2,       arrow_shaft_h],
-        [ 0,               arrow_h],
-        [-arrow_w/2,       arrow_shaft_h],
-        [-arrow_shaft_w/2, arrow_shaft_h]
-    ]);
+// Single unified polygon: constant-width shaft (arrow_shaft_w) + arrowhead (arrow_w)
+module arrow_full_2d() {
+    theta = asin(arrow_head_h / roller_r_mid);
+    a0    = 180 + theta;   // angle at arrowhead base
+    a1    = 270;           // angle at entry
+    n     = 60;
+    outer_arc = [for (i = [0:n])
+        let(a = a0 + (a1 - a0) * i / n)
+        [(roller_r_mid + arrow_shaft_w/2) * cos(a), (roller_r_mid + arrow_shaft_w/2) * sin(a)]
+    ];
+    inner_arc = [for (i = [0:n])
+        let(a = a1 - (a1 - a0) * i / n)
+        [(roller_r_mid - arrow_shaft_w/2) * cos(a), (roller_r_mid - arrow_shaft_w/2) * sin(a)]
+    ];
+    tip = [-roller_r_mid * cos(theta) - (arrow_w/2) * sin(theta),
+           -roller_r_mid * sin(theta) + (arrow_w/2) * cos(theta)];
+    polygon(concat(
+        outer_arc,
+        inner_arc,
+        [
+            [(roller_r_mid - arrow_w/2) * cos(a0), (roller_r_mid - arrow_w/2) * sin(a0)],
+            tip,
+            [(roller_r_mid + arrow_w/2) * cos(a0), (roller_r_mid + arrow_w/2) * sin(a0)]
+        ]
+    ));
+}
+
+// Arrow outline = full shape minus inset
+module arrow_2d_curved() {
+    difference() {
+        arrow_full_2d();
+        offset(delta = -arrow_outline) arrow_full_2d();
+    }
 }
 
 module arrow_cutout() {
-    translate([plate_w/2, (plate_d - arrow_h)/2, -0.001])
+    translate([arc_cx, arc_cy, -0.001])
     linear_extrude(plate_h + 0.002)
-    difference() {
-        arrow_2d();
-        offset(delta = -arrow_outline) arrow_2d();
-    }
+    arrow_2d_curved();
 }
 
 module arrow() {
     color("green")
-    translate([plate_w/2, (plate_d - arrow_h)/2, 0])
+    translate([arc_cx, arc_cy, 0])
     linear_extrude(plate_h)
-    difference() {
-        arrow_2d();
-        offset(delta = -arrow_outline) arrow_2d();
-    }
+    arrow_2d_curved();
 }
 
 module belt() {
