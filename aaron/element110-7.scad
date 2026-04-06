@@ -1,6 +1,10 @@
-// element110.scad
-// Spur gear tile — centered black gear ring with trapezoidal teeth.
+// element110-7.scad
+// Gear tile variant — number "7" in the bore.
+
+// element110-base.scad
+// Spur gear tile base — centered black gear ring with trapezoidal teeth.
 // The open bore reveals a lighter interior (gear_bore module).
+// Include this file and add a gear_label() module for each numbered variant.
 // Units: inches
 
 plate_w = 2 + 7/8;
@@ -89,10 +93,10 @@ module rivets() {
 // Single trapezoidal tooth pointing in +x direction (before rotation)
 module gear_tooth_2d() {
     polygon([
-        [gear_r_root * cos(-tooth_hw),             gear_r_root * sin(-tooth_hw)],
+        [gear_r_root * cos(-tooth_hw),              gear_r_root * sin(-tooth_hw)],
         [gear_r_tip  * cos(-tooth_hw * tooth_tip_f), gear_r_tip  * sin(-tooth_hw * tooth_tip_f)],
         [gear_r_tip  * cos( tooth_hw * tooth_tip_f), gear_r_tip  * sin( tooth_hw * tooth_tip_f)],
-        [gear_r_root * cos( tooth_hw),             gear_r_root * sin( tooth_hw)],
+        [gear_r_root * cos( tooth_hw),              gear_r_root * sin( tooth_hw)],
     ]);
 }
 
@@ -110,7 +114,7 @@ module gear_2d() {
 // Black gear ring + teeth with open bore
 module gear() {
     color("black")
-    translate([plate_w / 2, plate_d / 2, 0])
+    translate([plate_w / 2, plate_d / 2, +0.001])
     linear_extrude(plate_h)
     difference() {
         gear_2d();
@@ -126,7 +130,15 @@ module gear_bore() {
     circle(r = gear_r_bore - 0.001, $fn = 80);
 }
 
-// Green "1" centered inside the bore
+// ── Assembly ─────────────────────────────────────────────────────────────────
+
+frame();
+plate();
+rivets();
+gear_bore();
+gear();
+
+
 module gear_label() {
     color("green")
     translate([plate_w / 2, plate_d / 2, 0])
@@ -135,11 +147,5 @@ module gear_label() {
          font = "Liberation Sans:style=Bold");
 }
 
-// ── Assembly ─────────────────────────────────────────────────────────────────
 
-frame();
-plate();
-rivets();
-gear_bore();
-gear();
 gear_label();
