@@ -18,7 +18,7 @@ from pathlib import Path
 BASE     = Path(__file__).parent
 MD_FILE  = BASE / "md" / "piece_count.md"
 OUT_DIR  = BASE / "3mf"
-SCAD_DIR = BASE / "aaron"
+SCAD_DIR = BASE / "scad"
 
 
 def parse_element_id(cell):
