@@ -10,8 +10,8 @@
 | Element14 | Modular Arrow Component (Green) | ![Element14](../Images/Later/Element14.jpg) | ![Element13](../Images/Later/Element13.jpg) | 0 | |4 |
 | Element15 | Three-Way Arrow (Green) | ![Element15](../Images/Later/Element15.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | 4 |
 | Element20 | Double Straight Arrow (Blue) | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 24 | |
-| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element0](../Images/Element22.jpg) | 0 | 8 | |
-| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element0](../Images/Element21.jpg) | 0 | 8 | |
+| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element22](../Images/Element22.jpg) | 0 | 8 | |
+| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element21](../Images/Element21.jpg) | 0 | 8 | |
 | Element25 | Textured Background (Green) | ![Element25](../Images/Element25.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element26 | Straight Arrow (Green Textured) | ![Element26](../Images/Element26.jpg) | ![Element25](../Images/Element25.jpg) | 0 | | 2|
 | Element27 | Curved Arrow Right (Green Textured) | ![Element27](../Images/Element27.jpg) | ![Element28](../Images/Element28.jpg) | 0 | | 2|
@@ -25,15 +25,23 @@
 | Element42 | Void Tunnel (Hazard Border Variant A) | ![Element42](../Images/Later/Element42.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element43 | Void Tunnel (Hazard Border Variant B) | ![Element43](../Images/Later/Element43.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element55 | Water Texture | ![Element55](../Images/Element55.jpg) | ![Element0](../Images/Element0.jpg) | 0 |  | |
-| Element56 | Water Straight Arrow | ![Element56](../Images/Element56.jpg) | ![Element0](../Images/Element55.jpg) | 0 | 20 | |
-| Element57 | Water Curved Arrow Right | ![Element57](../Images/Element57.jpg) | ![Element0](../Images/Element58.jpg) | 0 | 2 | |
+| Element56 | Water Straight Arrow | ![Element56](../Images/Element56.jpg) | ![Element55](../Images/Element55.jpg) | 0 | 20 | |
+| Element57 | Water Curved Arrow Right | ![Element57](../Images/Element57.jpg) | ![Element58](../Images/Element58.jpg) | 0 | 2 | |
 | Element58 | Water Curved Arrow Round Pivot | ![Element58](../Images/Element58.jpg) | ![Element57](../Images/Element57.jpg) | 0 | 2 | |
-| Element59 | Water Vortex | ![Element59](../Images/Element59.jpg) | ![Element0](../Images/Element55.jpg) | 0 | 1 | |
+| Element59 | Water Vortex | ![Element59](../Images/Element59.jpg) | ![Element55](../Images/Element55.jpg) | 0 | 1 | |
 | Element61 | Lightning Burst | ![Element61](../Images/Element61.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 2 | |
 | Element70 | Control Dial | ![Element70](../Images/Later/Element70.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element80 | Fire / Explosion | ![Element80](../Images/Later/Element80.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element92 | Tool Kit | ![Element92](../Images/Element92.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 5 | |
-| Element110 | Start Square (need numbers) | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | |
+| Element110 | Start Square (need numbers) | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 |  | |
+| Element110-1 | Start Square #1 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-2 | Start Square #2 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-3 | Start Square #3 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-4 | Start Square #4 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-5 | Start Square #5 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-6 | Start Square #6 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-7 | Start Square #7 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element110-8 | Start Square #8 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element200 | Raised Wall | ![Element200](../Images/Element200.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 16 | |
 | Element201 | Two-Zone Hazard Tile | ![Element201](../Images/Later/Element201.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element202 | Mechanical Scale | ![Element202](../Images/Later/Element202.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |

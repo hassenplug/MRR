@@ -63,9 +63,9 @@ def export_stl(scad_source, stl_path):
         os.unlink(tmp_scad)
 
 
-def max_z(triangles):
-    """Return the maximum Z coordinate across all triangle vertices."""
-    return max(v[2] for tri in triangles for v in tri)
+def max_axis(triangles,axis=2):
+    """Return the maximum coordinate across all triangle vertices."""
+    return max(v[axis] for tri in triangles for v in tri)
 
 
 def offset_z(triangles, z):
@@ -78,16 +78,24 @@ def offset_z(triangles, z):
     )
 
 
-def flip_z(triangles):
-    """Flip triangles so the top face (max Z) lies at z=0.
-    Reverses winding order so outward normals remain correct after the flip."""
-    h = max_z(triangles)
+def flip_bottom(parts):
+    """Rotate 180° around the X axis for each part in a (name, triangles) list.
+    Negates Y and Z, then translates back into positive space.
+    Two reflections = proper rotation, winding preserved."""
     result = []
-    for v0, v1, v2 in triangles:
-        nv0 = (v0[0], v0[1], h - v0[2])
-        nv1 = (v1[0], v1[1], h - v1[2])
-        nv2 = (v2[0], v2[1], h - v2[2])
-        result.append((nv2, nv1, nv0))  # reversed winding fixes normals
+    mx = max(v[0] for _, triangles in parts for tri in triangles for v in tri) + min(v[0] for _, triangles in parts for tri in triangles for v in tri)
+    my = max(v[1] for _, triangles in parts for tri in triangles for v in tri) + min(v[1] for _, triangles in parts for tri in triangles for v in tri)
+    mz = max(v[2] for _, triangles in parts for tri in triangles for v in tri) + min(v[2] for _, triangles in parts for tri in triangles for v in tri)
+
+    print(f"Input:  {mx:.6f} x {my:.6f} x {mz:.6f}")
+    for name, triangles in parts:
+        flipped = []
+        for v0, v1, v2 in triangles:
+            nv0 = (mx - v0[0],v0[1],mz - v0[2])
+            nv1 = (mx - v1[0],v1[1],mz - v1[2])
+            nv2 = (mx - v2[0],v2[1],mz - v2[2])
+            flipped.append((nv0, nv1, nv2))
+        result.append((name, flipped))
     return result
 
 
@@ -258,7 +266,7 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
             continue
         if z_offset:
             triangles = offset_z(triangles, z_offset)
-        z = max_z(triangles)
+        z = max_axis(triangles, axis=2)
         if z > top_z:
             top_z = z
         print(f"{len(triangles):,} triangles")
@@ -291,36 +299,19 @@ def main():
     parts = []
     with tempfile.TemporaryDirectory() as tmpdir:
         if two_file_mode:
-            print("--- Bottom (will be flipped) ---")
+            print("--- Bottom (flipped to face down) ---")
             bottom_parts, bottom_height = render_colors(bottom_path, tmpdir, "bottom")
-            bottom_parts = [(name, flip_z(tris)) for name, tris in bottom_parts]
-            parts.extend(bottom_parts)
+            parts.extend(flip_bottom(bottom_parts))
             print(f"\nBottom height: {bottom_height:.6f} — top will be raised by this amount\n")
 
             print("--- Top ---")
             top_parts, _ = render_colors(top_path, tmpdir, "top", z_offset=bottom_height)
             parts.extend(top_parts)
         else:
-            colors = find_colors(scad_path)
-            if not colors:
-                print("No color() calls found. Exporting as single-color 3MF.")
-                colors = ["default"]
-            print(f"Colors found: {colors}\n")
-            for color in colors:
-                stl_path = Path(tmpdir) / f"{color}.stl"
-                print(f"Rendering '{color}' ...", end=" ", flush=True)
-                scad_src = (scad_path.read_text(encoding="utf-8") if color == "default"
-                            else make_filter_scad(str(scad_path), color))
-                ok = export_stl(scad_src, stl_path)
-                if not ok or not stl_path.exists():
-                    print("FAILED (skipped)")
-                    continue
-                triangles = read_binary_stl(stl_path)
-                if not triangles:
-                    print("0 triangles (skipped)")
-                    continue
-                print(f"{len(triangles):,} triangles")
-                parts.append((color, triangles))
+            print("--- Rendering ---")
+            file_parts, _ = render_colors(scad_path, tmpdir, "")
+            # strip the leading underscore from the prefix-less labels
+            parts.extend((name.lstrip("_"), tris) for name, tris in file_parts)
 
     if not parts:
         print("No geometry produced. Check your SCAD file.")
