@@ -4,12 +4,15 @@
 |---------|-------------|-------|----------|------|---------------|-------------|
 | Element0 | Plain Metal Plate (Base) | ![Element0](../Images/Element0.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 0 | |
 | Element10 | Straight Arrow (Green) | ![Element10](../Images/Element10.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 56 | |
+| Element10-2 | Straight Arrow (Green) Alt | ![Element10](../Images/Element10.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element11 | Curved Arrow Right (Green) | ![Element11](../Images/Element11.jpg) | ![Element12](../Images/Element12.jpg) | 0 | 32 | |
+| Element11-2 | Curved Arrow Right (Green) Alt | ![Element11](../Images/Element11.jpg) | ![Element12](../Images/Element12.jpg) | 0 | 1 | |
 | Element12 | Curved Arrow Left (Green) | ![Element12](../Images/Element12.jpg) | ![Element11](../Images/Element11.jpg) | 0 | 32 | |
 | Element13 | Arrow with Corner Brackets (Green) | ![Element13](../Images/Later/Element13.jpg) | ![Element14](../Images/Later/Element14.jpg) | 0 | | 4 |
 | Element14 | Modular Arrow Component (Green) | ![Element14](../Images/Later/Element14.jpg) | ![Element13](../Images/Later/Element13.jpg) | 0 | |4 |
 | Element15 | Three-Way Arrow (Green) | ![Element15](../Images/Later/Element15.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | 4 |
 | Element20 | Double Straight Arrow (Blue) | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 24 | |
+| Element20-2 | Double Straight Arrow (Blue) Alt | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element22](../Images/Element22.jpg) | 0 | 8 | |
 | Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element21](../Images/Element21.jpg) | 0 | 8 | |
 | Element25 | Textured Background (Green) | ![Element25](../Images/Element25.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |

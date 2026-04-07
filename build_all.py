@@ -66,6 +66,7 @@ def main():
     built = 0
     skipped_missing = 0
     skipped_no_need = 0
+    skipped_exists = 0
 
     for line in data_lines:
         if not line.strip() or not line.startswith("|"):
@@ -105,6 +106,10 @@ def main():
             print(f"Skipping {top_id}: {bottom_scad.relative_to(BASE)} not found")
             skipped_missing += 1
             continue
+        if out_3mf.exists():
+            print(f"Skipping {bottom_id}: {out_3mf.relative_to(BASE)} already exists")
+            skipped_exists += 1
+            continue
 
         print(f"\n{'='*60}")
         print(f"Building {top_id}  (need={need})")
@@ -125,8 +130,8 @@ def main():
         else:
             built += 1
 
-    print(f"\nDone: {built} built, {skipped_missing} skipped (missing SCAD), "
-          f"{skipped_no_need} skipped (no print need)")
+    print(f"\nDone: {built} built, {skipped_exists} skipped (already exists), "
+          f"{skipped_missing} skipped (missing SCAD), {skipped_no_need} skipped (no print need)")
 
 
 if __name__ == "__main__":
