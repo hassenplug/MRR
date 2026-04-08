@@ -5,7 +5,9 @@
       "Bash(py extract_colors_reduced.py)",
       "Bash(py generate_rivet_plate.py)",
       "Bash(mkdir -p \"c:\\\\Users\\\\hasse\\\\OneDrive\\\\Documents\\\\git\\\\MRR\\\\.claude\\\\skills\\\\image-to-scad\")",
-      "Bash(cp \"c:\\\\Users\\\\hasse\\\\OneDrive\\\\Documents\\\\git\\\\MRR\\\\.claude\\\\commands\\\\image-to-scad.md\" \"c:\\\\Users\\\\hasse\\\\OneDrive\\\\Documents\\\\git\\\\MRR\\\\.claude\\\\skills\\\\image-to-scad\\\\SKILL.md\")"
+      "Bash(cp \"c:\\\\Users\\\\hasse\\\\OneDrive\\\\Documents\\\\git\\\\MRR\\\\.claude\\\\commands\\\\image-to-scad.md\" \"c:\\\\Users\\\\hasse\\\\OneDrive\\\\Documents\\\\git\\\\MRR\\\\.claude\\\\skills\\\\image-to-scad\\\\SKILL.md\")",
+      "Bash(ls -la /c/Users/hasse/OneDrive/Documents/git/MRR/scad/*.scad)",
+      "Bash(ls /c/Users/hasse/OneDrive/Documents/git/MRR/scad/*.scad)"
     ]
   }
 }
