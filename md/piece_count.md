@@ -36,6 +36,13 @@
 | Element70 | Control Dial | ![Element70](../Images/Later/Element70.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element80 | Fire / Explosion | ![Element80](../Images/Later/Element80.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element92 | Tool Kit | ![Element92](../Images/Element92.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 5 | |
+| Element100 | Flag Square (need numbers) | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 |  | |
+| Element100-1 | Flag Square #1 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element100-2 | Flag Square #2 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element100-3 | Flag Square #3 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element100-4 | Flag Square #4 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element100-5 | Flag Square #5 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
+| Element100-6 | Flag Square #6 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element110 | Start Square (need numbers) | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 |  | |
 | Element110-1 | Start Square #1 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element110-2 | Start Square #2 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
