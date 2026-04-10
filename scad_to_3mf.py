@@ -26,20 +26,42 @@ OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
 
 
 def find_colors(scad_path):
-    """Return unique color name strings from color() calls, in order of appearance."""
-    text = Path(scad_path).read_text(encoding="utf-8")
-    colors = re.findall(r'color\s*\(\s*["\']([^"\']+)["\']', text)
-    return list(dict.fromkeys(colors))  # deduplicate, preserve order
-
-
-def make_filter_scad(scad_abs, target_color):
     """
-    Return SCAD source that redefines color() to only render the target color,
-    then includes the original file.
+    Return list of (label, scad_expr) for each unique color() call, in order.
+    Handles both string colors — color("name") — and array colors — color([r,g,b]).
+    label   : safe identifier used in filenames and part names
+    scad_expr: the raw expression to compare against in the filter (e.g. '"black"'
+               or '[0.72, 0.22, 0.13]')
+    """
+    text = Path(scad_path).read_text(encoding="utf-8")
+    pattern = re.compile(r'color\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\[[^\]]+\]))')
+    seen = {}
+    for m in pattern.finditer(text):
+        if m.group(1):          # double-quoted string
+            label = m.group(1)
+            expr  = f'"{label}"'
+        elif m.group(2):        # single-quoted string
+            label = m.group(2)
+            expr  = f'"{label}"'
+        else:                   # array, e.g. [0.72, 0.22, 0.13]
+            raw   = m.group(3)
+            nums  = re.findall(r'[\d.]+', raw)
+            label = "rgb_" + "_".join(nums)
+            expr  = raw
+        if label not in seen:
+            seen[label] = expr
+    return list(seen.items())   # [(label, expr), ...]
+
+
+def make_filter_scad(scad_abs, color_expr):
+    """
+    Return SCAD source that redefines color() to only render geometry whose
+    color argument matches color_expr (a raw SCAD expression such as '"black"'
+    or '[0.72, 0.22, 0.13]'), then includes the original file.
     """
     escaped = scad_abs.replace("\\", "/")
     return f"""module color(c, alpha=1.0) {{
-    if (c == "{target_color}") children();
+    if (c == {color_expr}) children();
 }}
 include <{escaped}>
 """
@@ -252,10 +274,10 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
 
     parts = []
     top_z = 0.0
-    for color in colors:
-        stl_path = Path(tmpdir) / f"{prefix}_{color}.stl"
-        print(f"  Rendering '{color}' ...", end=" ", flush=True)
-        scad_src = make_filter_scad(str(scad_path), color)
+    for label, expr in colors:
+        stl_path = Path(tmpdir) / f"{prefix}_{label}.stl"
+        print(f"  Rendering '{label}' ...", end=" ", flush=True)
+        scad_src = make_filter_scad(str(scad_path), expr)
         ok = export_stl(scad_src, stl_path)
         if not ok or not stl_path.exists():
             print("FAILED (skipped)")
@@ -270,7 +292,7 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
         if z > top_z:
             top_z = z
         print(f"{len(triangles):,} triangles")
-        parts.append((f"{prefix}_{color}", triangles))
+        parts.append((f"{prefix}_{label}", triangles))
     return parts, top_z
 
 
