@@ -55,11 +55,19 @@ module frame() {
     }
 }
 
+// Cut the full gear profile (ring + teeth, including bore) through the plate
+module gear_holes() {
+    translate([plate_w / 2, plate_d / 2, -1])
+    linear_extrude(plate_h + 2)
+    gear_2d();
+}
+
 module plate() {
     difference() {
         color("darkgray")
             cube([plate_w, plate_d, plate_h]);
         rivet_holes();
+        gear_holes();
     }
 }
 
@@ -111,7 +119,7 @@ module gear_2d() {
 // Black gear ring + teeth with open bore
 module gear() {
     color("black")
-    translate([plate_w / 2, plate_d / 2, +0.001])
+    translate([plate_w / 2, plate_d / 2, 0])
     linear_extrude(plate_h)
     difference() {
         gear_2d();
@@ -123,7 +131,7 @@ module gear() {
 module gear_bore() {
     color([0.80, 0.80, 0.80])
     translate([plate_w / 2, plate_d / 2, 0])
-    linear_extrude(plate_h + 0.001)
+    linear_extrude(plate_h)
     circle(r = gear_r_bore - 0.001, $fn = 80);
 }
 

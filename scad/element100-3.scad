@@ -1,5 +1,5 @@
 // element100-3.scad
-// Flag square tile variant — gear with pennant flag, number "3" on yellow flag.
+// Flag square tile variant — gear with pennant flag, number "3" on flag.
 
 plate_w = 2 + 7/8;
 plate_d = 2 + 7/8;
@@ -30,6 +30,8 @@ flag_tip_x   = plate_w / 2 - gear_r_tip * 0.60;
 flag_mid_y   = (flag_top_y + flag_bot_y) / 2;
 outline_t    = 0.025;
 
+// ── Standard modules ─────────────────────────────────────────────────────────
+
 module rivet_holes() {
     spacing_x = plate_w / 10;
     spacing_y = plate_d / 10;
@@ -49,6 +51,7 @@ module frame() {
     }
 }
 
+// Plate with rivet holes only — all other holes are added at assembly level
 module plate() {
     difference() {
         color("darkgray") cube([plate_w, plate_d, plate_h]);
@@ -70,6 +73,8 @@ module rivets() {
     }
 }
 
+// ── Gear 2D helpers ───────────────────────────────────────────────────────────
+
 module gear_tooth_2d() {
     polygon([
         [gear_r_root * cos(-tooth_hw),               gear_r_root * sin(-tooth_hw)],
@@ -87,19 +92,40 @@ module gear_2d() {
     }
 }
 
+// ── Gear holes & gear ────────────────────────────────────────────────────────
+
+module gear_holes() {
+    translate([plate_w / 2, plate_d / 2, -1])
+    linear_extrude(plate_h + 2)
+    difference() {
+        gear_2d();
+        circle(r = gear_r_bore, $fn = 80);
+    }
+}
+
 module gear() {
     color("black")
-    translate([plate_w / 2, plate_d / 2, +0.001])
+    translate([plate_w / 2, plate_d / 2, 0])
     linear_extrude(plate_h)
     difference() { gear_2d(); circle(r = gear_r_bore, $fn = 80); }
+}
+
+// ── Gear bore hole & gear bore ────────────────────────────────────────────────
+
+module gear_bore_holes() {
+    translate([plate_w / 2, plate_d / 2, -1])
+    linear_extrude(plate_h + 2)
+    circle(r = gear_r_bore, $fn = 80);
 }
 
 module gear_bore() {
     color([0.80, 0.80, 0.80])
     translate([plate_w / 2, plate_d / 2, 0])
-    linear_extrude(plate_h + 0.001)
+    linear_extrude(plate_h)
     circle(r = gear_r_bore - 0.001, $fn = 80);
 }
+
+// ── Flag 2D helpers ───────────────────────────────────────────────────────────
 
 module flag_pennant_2d() {
     polygon([
@@ -109,15 +135,25 @@ module flag_pennant_2d() {
     ]);
 }
 
-module flag_pole() {
-    color("red")
-    translate([pole_cx - pole_r, pole_y1, 0.002])
-    cube([pole_r * 2, pole_y2 - pole_y1, plate_h]);
+module flag_label_2d() {
+    translate([flag_base_x + (flag_tip_x - flag_base_x) * 0.38, flag_mid_y])
+    text("3", size = 0.65, halign = "center", valign = "center",
+         font = "Liberation Sans:style=Bold");
+}
+
+// ── Flag outline hole & flag outline ─────────────────────────────────────────
+
+module flag_outline_holes() {
+    translate([0, 0, -1])
+    linear_extrude(plate_h + 2)
+    difference() {
+        offset(delta = outline_t) flag_pennant_2d();
+        flag_pennant_2d();
+    }
 }
 
 module flag_outline() {
     color("darkgray")
-    translate([0, 0, 0.001])
     linear_extrude(plate_h)
     difference() {
         offset(delta = outline_t) flag_pennant_2d();
@@ -125,28 +161,86 @@ module flag_outline() {
     }
 }
 
+// ── Flag pole hole, flag hole → flag pole, flag ───────────────────────────────
+
+module flag_pole_holes() {
+    translate([pole_cx - pole_r, pole_y1, -1])
+    cube([pole_r * 2, pole_y2 - pole_y1, plate_h + 2]);
+}
+
+module flag_pole() {
+    color("red")
+    translate([pole_cx - pole_r, pole_y1, 0])
+    cube([pole_r * 2, pole_y2 - pole_y1, plate_h]);
+}
+
+module flag_holes() {
+    translate([0, 0, -1])
+    linear_extrude(plate_h + 2)
+    flag_pennant_2d();
+}
+
 module flag() {
     color("red")
-    translate([0, 0, 0.002])
     linear_extrude(plate_h)
     flag_pennant_2d();
 }
 
-frame();
-plate();
-rivets();
-gear_bore();
-gear();
-flag_outline();
-flag_pole();
-flag();
+// ── Label hole → label ────────────────────────────────────────────────────────
+
+module label_holes() {
+    translate([0, 0, -1])
+    linear_extrude(plate_h + 2)
+    flag_label_2d();
+}
 
 module flag_label() {
     color("darkblue")
-    translate([flag_base_x + (flag_tip_x - flag_base_x) * 0.38, flag_mid_y, 0])
-    linear_extrude(plate_h + 0.003)
-    text("3", size = 0.65, halign = "center", valign = "center",
-         font = "Liberation Sans:style=Bold");
+    linear_extrude(plate_h)
+    flag_label_2d();
 }
 
-flag_label();
+// ── Assembly ──────────────────────────────────────────────────────────────────
+// Each level: difference() cuts the holes INTO the running assembly,
+//             union() then adds the feature that fills those holes.
+// Innermost = first step; outermost = last step.
+
+frame();
+
+union() {                                           // step 6: add label
+    difference() {
+        union() {                                   // step 5: add flag pole & flag
+            difference() {
+                union() {                           // step 4: add flag outline
+                    difference() {
+                        union() {                   // step 3: add gear bore
+                            difference() {
+                                union() {           // step 2: add gear
+                                    difference() {
+                                        // step 1: plate & rivet holes + rivets
+                                        union() {
+                                            plate();
+                                            rivets();
+                                        }
+                                        gear_holes();       // cut gear holes
+                                    }
+                                    gear();                 // fill with gear
+                                }
+                                gear_bore_holes();          // cut gear bore hole
+                            }
+                            gear_bore();                    // fill with gear bore
+                        }
+                        flag_outline_holes();               // cut flag outline hole
+                    }
+                    flag_outline();                         // fill with flag outline
+                }
+                flag_pole_holes();                          // cut flag pole hole
+                flag_holes();                               // cut flag hole
+            }
+            flag_pole();                                    // fill with flag pole
+            flag();                                         // fill with flag
+        }
+        label_holes();                                      // cut label hole
+    }
+    flag_label();                                           // fill with label
+}

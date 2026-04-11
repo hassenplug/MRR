@@ -1,7 +1,5 @@
 // element120.scad
-// Vortex Portal (Orange) — white upward arrow through an orange ring.
-// White border and light green from source image → standard metal plate.
-// Dark green → orange ring + dashes; arrow remains white.
+// Vortex Portal (Orange) — orange ring with inner fill, dashes, and upward arrow.
 // Units: inches
 
 plate_w = 2 + 7/8;
@@ -56,6 +54,7 @@ module frame() {
     }
 }
 
+// Plate with rivet holes only — all other holes are added at assembly level
 module plate() {
     difference() {
         color("darkgray")
@@ -78,12 +77,20 @@ module rivets() {
     }
 }
 
-// ── Feature modules ───────────────────────────────────────────────────────────
+// ── Ring hole & ring ─────────────────────────────────────────────────────────
 
-// Orange annular ring — the portal boundary circle (scaled to former disc footprint)
+module ring_holes() {
+    translate([cx, cy, -1])
+    linear_extrude(plate_h + 2)
+    difference() {
+        circle(r = ring_r_out, $fn = 120);
+        circle(r = ring_r_in,  $fn = 120);
+    }
+}
+
 module white_ring() {
     color("orange")
-    translate([cx, cy, 0.001])
+    translate([cx, cy, 0])
     linear_extrude(plate_h)
     difference() {
         circle(r = ring_r_out, $fn = 120);
@@ -91,7 +98,36 @@ module white_ring() {
     }
 }
 
-// Orange dashed arc — intake indicator at bottom of portal opening
+// ── Inner fill hole & inner fill ─────────────────────────────────────────────
+
+module inner_fill_holes() {
+    translate([cx, cy, -1])
+    linear_extrude(plate_h + 2)
+    circle(r = ring_r_in, $fn = 120);
+}
+
+module inner_fill() {
+    color("lightgray")
+    translate([cx, cy, 0])
+    linear_extrude(plate_h)
+    circle(r = ring_r_in - 0.001, $fn = 120);
+}
+
+// ── Dash holes & dashes ───────────────────────────────────────────────────────
+
+module dash_holes() {
+    span = dash_a2 - dash_a1;
+    for (i = [0 : dash_count - 1]) {
+        angle = dash_a1 + span * i / (dash_count - 1);
+        dx = cx + dash_r * cos(angle);
+        dy = cy + dash_r * sin(angle);
+        translate([dx, dy, -1])
+        rotate([0, 0, angle + 90])
+        linear_extrude(plate_h + 2)
+        square([dash_w, dash_len], center = true);
+    }
+}
+
 module white_dashes() {
     span = dash_a2 - dash_a1;
     color("orange") {
@@ -99,7 +135,7 @@ module white_dashes() {
             angle = dash_a1 + span * i / (dash_count - 1);
             dx = cx + dash_r * cos(angle);
             dy = cy + dash_r * sin(angle);
-            translate([dx, dy, 0.0011])
+            translate([dx, dy, 0])
             rotate([0, 0, angle + 90])
             linear_extrude(plate_h)
             square([dash_w, dash_len], center = true);
@@ -107,24 +143,14 @@ module white_dashes() {
     }
 }
 
-// Light grey fill inside the ring's inner hole
-module inner_fill() {
-    color("lightgray")
-    translate([cx, cy, 0.001])
-    linear_extrude(plate_h)
-    circle(r = ring_r_in - 0.001, $fn = 120);
-}
+// ── Arrow hole & arrow ────────────────────────────────────────────────────────
 
-// Orange upward arrow — ejection direction indicator
-module white_arrow() {
-    color("orange")
-    translate([0, 0, 0.0011])
-    linear_extrude(plate_h)
+module arrow_holes() {
+    translate([0, 0, -1])
+    linear_extrude(plate_h + 2)
     union() {
-        // Stem
         translate([cx - arr_stem_w / 2, arr_stem_y1])
             square([arr_stem_w, arr_stem_y2 - arr_stem_y1]);
-        // Arrowhead
         translate([cx, arr_stem_y2])
             polygon([
                 [-arr_head_w / 2, 0],
@@ -134,12 +160,50 @@ module white_arrow() {
     }
 }
 
-// ── Assembly ─────────────────────────────────────────────────────────────────
+module white_arrow() {
+    color("orange")
+    linear_extrude(plate_h)
+    union() {
+        translate([cx - arr_stem_w / 2, arr_stem_y1])
+            square([arr_stem_w, arr_stem_y2 - arr_stem_y1]);
+        translate([cx, arr_stem_y2])
+            polygon([
+                [-arr_head_w / 2, 0],
+                [ arr_head_w / 2, 0],
+                [0, arr_head_h]
+            ]);
+    }
+}
+
+// ── Assembly ──────────────────────────────────────────────────────────────────
+// Each level: difference() cuts the holes INTO the running assembly,
+//             union() then adds the feature that fills those holes.
+// Innermost = first step; outermost = last step.
 
 frame();
-plate();
-rivets();
-white_ring();
-inner_fill();
-white_dashes();
-white_arrow();
+
+union() {                                           // step 4: add dashes & arrow
+    difference() {
+        union() {                                   // step 3: add inner fill
+            difference() {
+                union() {                           // step 2: add ring
+                    difference() {
+                        // step 1: plate & rivet holes + rivets
+                        union() {
+                            plate();
+                            rivets();
+                        }
+                        ring_holes();               // cut ring holes
+                    }
+                    white_ring();                   // fill with ring
+                }
+                inner_fill_holes();                 // cut inner fill holes
+            }
+            inner_fill();                           // fill with inner fill
+        }
+        dash_holes();                               // cut dash holes
+        arrow_holes();                              // cut arrow holes
+    }
+    white_dashes();                                 // fill with dashes
+    white_arrow();                                  // fill with arrow
+}
