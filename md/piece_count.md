@@ -53,7 +53,7 @@
 | Element110-7 | Start Square #7 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element110-8 | Start Square #8 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
 | Element120 | Reboot Square | ![Element120](../Images/Element120.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 4 | |
-| Element200 | Raised Wall | ![Element200](../Images/Element200.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 16 | |
+| Element200 | Raised Wall | ![Element200](../Images/Element200.jpg) | | 0 | 16 | |
 | Element201 | Two-Zone Hazard Tile | ![Element201](../Images/Later/Element201.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element202 | Mechanical Scale | ![Element202](../Images/Later/Element202.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | ElementR | Energy Connection | ![ElementR](../Images/ElementR.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |

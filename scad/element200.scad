@@ -20,10 +20,14 @@ wall_total_w = plate_w + 2 * frame_w;  // 3.0" — covers plate + both frame str
 wall_x0      = -frame_w;              // left edge x
 
 // Brick pattern parameters
-brick_l   = 0.40;   // brick length (long axis)
-brick_h_f = 0.10;   // brick face height (short axis on face)
-brick_d   = 0.020;  // protrusion depth
-brick_gap = 0.025;  // mortar gap between bricks
+brick_cols     = 7;
+brick_num_rows = 4;
+brick_gap      = 0.02;
+brick_z0       = 1/8;                   // bricks start here (bottom of first row)
+brick_l        = (wall_total_w - (brick_cols - 1) * brick_gap) / brick_cols;
+brick_h_f      = (wall_h - brick_z0 - (brick_num_rows - 1) * brick_gap) / brick_num_rows;
+brick_col_pitch = brick_l + brick_gap;
+brick_row_pitch = brick_h_f + brick_gap;
 
 // ── Standard tile modules ────────────────────────────────────────────────────
 
@@ -69,82 +73,38 @@ module rivets() {
 
 // ── Brick wall ───────────────────────────────────────────────────────────────
 
-// Shared row layout
-brick_col_pitch = brick_l   + brick_gap;
-brick_row_pitch = brick_h_f + brick_gap;
-brick_num_rows  = 4;
-brick_row_span  = brick_num_rows * brick_h_f + (brick_num_rows - 1) * brick_gap;
-brick_start_z   = (wall_h - brick_row_span) / 2;
-
-mortar_d = brick_d;   // groove depth (same as old protrusion)
-
-// Horizontal seam ring at height z0, band height = brick_gap —
-// wraps all the way around front face, both ends, and back face.
-module h_seam_ring(z0) {
-    // front face — groove into -Y
-    translate([wall_x0 - 0.001, wall_y - mortar_d, z0])
-        cube([wall_total_w + 0.002, mortar_d + 0.001, brick_gap]);
-    // back face — groove into +Y
-    translate([wall_x0 - 0.001, wall_y + wall_thick - 0.001, z0])
-        cube([wall_total_w + 0.002, mortar_d + 0.001, brick_gap]);
-    // left end — groove into -X
-    translate([wall_x0 - mortar_d, wall_y - 0.001, z0])
-        cube([mortar_d + 0.001, wall_thick + 0.002, brick_gap]);
-    // right end — groove into +X
-    translate([wall_x0 + wall_total_w - 0.001, wall_y - 0.001, z0])
-        cube([mortar_d + 0.001, wall_thick + 0.002, brick_gap]);
+// Single dark gray mortar cube — same depth as wall, inset by brick_gap/2 on
+// each side in X and Z so it doesn't protrude past the outermost brick faces
+module wall_mortar() {
+    color("darkgray")
+    translate([wall_x0 + brick_gap / 2,
+               wall_y + brick_gap / 2,
+               brick_z0 + brick_gap / 2])
+        cube([wall_total_w - brick_gap,
+              wall_thick - brick_gap,
+              wall_h - brick_z0 - brick_gap]);
 }
 
-// All horizontal seams — one ring per inter-row boundary
-module h_seams() {
-    for (i = [0:brick_num_rows-1]) {
-        h_seam_ring(brick_start_z + i * brick_row_pitch + brick_h_f);
-    }
-}
-
-// Vertical seams cut into the front face (-Y)
-module v_seams_front() {
+// Red bricks — 7 columns × 4 rows, staggered, each brick full wall_thick deep.
+// Rows fill the wall height exactly; columns fill the 3" width exactly.
+// Clipped to wall footprint to trim stagger overhangs at the ends.
+module wall_bricks() {
+    color([0.72, 0.10, 0.07])
     intersection() {
-        translate([wall_x0 - 0.001, wall_y - mortar_d, -0.001])
-            cube([wall_total_w + 0.002, mortar_d + 0.002, wall_h + 0.002]);
-        for (row = [0:brick_num_rows-1]) {
-            col_off = (row % 2 == 0) ? 0 : brick_col_pitch / 2;
-            z0 = brick_start_z + row * brick_row_pitch;
-            for (col = [0:8]) {
-                translate([wall_x0 + col_off + col * brick_col_pitch + brick_l,
-                           wall_y - mortar_d,
-                           z0])
-                    cube([brick_gap, mortar_d + 0.001, brick_h_f]);
+        translate([wall_x0, wall_y, brick_z0])
+            cube([wall_total_w, wall_thick, wall_h - brick_z0]);
+        union() {
+            for (row = [0:brick_num_rows-1]) {
+                col_off = (row % 2 == 0) ? -brick_col_pitch / 2 : 0;
+                z0 = brick_z0 + row * brick_row_pitch;
+                for (col = [0:brick_cols]) {
+                    translate([wall_x0 + col * brick_col_pitch + col_off,
+                               wall_y,
+                               z0])
+                        cube([brick_l, wall_thick, brick_h_f]);
+                }
             }
         }
-    }
-}
-
-// Vertical seams cut into the back face (+Y)
-module v_seams_back() {
-    intersection() {
-        translate([wall_x0 - 0.001, wall_y + wall_thick - 0.001, -0.001])
-            cube([wall_total_w + 0.002, mortar_d + 0.002, wall_h + 0.002]);
-        for (row = [0:brick_num_rows-1]) {
-            col_off = (row % 2 == 0) ? 0 : brick_col_pitch / 2;
-            z0 = brick_start_z + row * brick_row_pitch;
-            for (col = [0:8]) {
-                translate([wall_x0 + col_off + col * brick_col_pitch + brick_l,
-                           wall_y + wall_thick - 0.001,
-                           z0])
-                    cube([brick_gap, mortar_d + 0.001, brick_h_f]);
-            }
-        }
-    }
-}
-
-module wall() {
-    color([0.72, 0.22, 0.13])   // brick red
-    difference() {
-        translate([wall_x0, wall_y, 0]) cube([wall_total_w, wall_thick, wall_h]);
-        h_seams();
-        v_seams_front();
-        v_seams_back();
     }
 }
 
@@ -153,4 +113,5 @@ module wall() {
 frame();
 plate();
 rivets();
-wall();
+wall_mortar();
+wall_bricks();
