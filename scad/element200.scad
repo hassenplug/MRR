@@ -36,9 +36,13 @@ module rivet_holes() {
     spacing_y = plate_d / 10;
     inset_x   = spacing_x / 2;
     inset_y   = spacing_y / 2;
+    // Front edge
     for (i = [0:9]) translate([inset_x + i*spacing_x, inset_y,           -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
+    // Back edge
     for (i = [0:9]) translate([inset_x + i*spacing_x, plate_d-inset_y,   -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
+    // Left edge
     for (i = [0:9]) translate([inset_x,           inset_y + i*spacing_y, -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
+    // Right edge
     for (i = [0:9]) translate([plate_w-inset_x,   inset_y + i*spacing_y, -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
 }
 
