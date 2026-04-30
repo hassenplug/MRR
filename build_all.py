@@ -119,7 +119,7 @@ def main():
         print(f"{'='*60}")
 
         result = subprocess.run(
-            ["py", "-3.12", "scad_to_3mf.py",
+            [sys.executable, "scad_to_3mf.py",
              str(top_scad.relative_to(BASE)),
              str(bottom_scad.relative_to(BASE)),
              str(out_3mf.relative_to(BASE))],
