@@ -210,29 +210,36 @@ arrow_head_h  = arrow_w / 2;
 arrow_shaft_w = arrow_w * 0.4;
 
 // Single unified polygon: constant-width shaft (arrow_shaft_w) + arrowhead (arrow_w)
+// Tail is at the 180° end (top extension); arrowhead at the 270° end (right extension).
 module arrow_full_2d() {
-    theta = asin(arrow_head_h / roller_r_mid);
-    a0    = 180 + theta;   // angle at arrowhead base
-    a1    = 270;           // angle at entry
-    n     = 60;
+    a_tail   = 180;         // tail end — connects to straight top section
+    a_head   = 270;         // arrowhead end — points right (+x)
+    n        = 60;
+    tail_len = rivet_inset; // straight rectangular section at the tail
+
+    // Outer arc: from arrowhead end (270°) back to tail end (180°)
     outer_arc = [for (i = [0:n])
-        let(a = a0 + (a1 - a0) * i / n)
+        let(a = a_head - (a_head - a_tail) * i / n)
         [(roller_r_mid + arrow_shaft_w/2) * cos(a), (roller_r_mid + arrow_shaft_w/2) * sin(a)]
     ];
+
+    // Inner arc: from tail end (180°) forward to arrowhead end (270°)
     inner_arc = [for (i = [0:n])
-        let(a = a1 - (a1 - a0) * i / n)
+        let(a = a_tail + (a_head - a_tail) * i / n)
         [(roller_r_mid - arrow_shaft_w/2) * cos(a), (roller_r_mid - arrow_shaft_w/2) * sin(a)]
     ];
-    tip = [-roller_r_mid * cos(theta) - (arrow_w/2) * sin(theta),
-           -roller_r_mid * sin(theta) + (arrow_w/2) * cos(theta)];
+
+    // Arrowhead at 270°, tip pointing right (+x), base vertical (parallel to side plate edge)
+    tip = [arrow_head_h, -roller_r_mid];
+
     polygon(concat(
-        outer_arc,
-        inner_arc,
-        [
-            [(roller_r_mid - arrow_w/2) * cos(a0), (roller_r_mid - arrow_w/2) * sin(a0)],
-            tip,
-            [(roller_r_mid + arrow_w/2) * cos(a0), (roller_r_mid + arrow_w/2) * sin(a0)]
-        ]
+        [tip,
+         [0, -(roller_r_mid + arrow_w/2)]],  // outer shoulder (vertical, at x=0)
+        outer_arc,                             // 270° → 180° along outer radius
+        [[-(roller_r_mid + arrow_shaft_w/2), tail_len],   // outer tail cap
+         [-(roller_r_mid - arrow_shaft_w/2), tail_len]],  // inner tail cap
+        inner_arc,                             // 180° → 270° along inner radius
+        [[0, -(roller_r_mid - arrow_w/2)]]    // inner shoulder (vertical, at x=0)
     ));
 }
 
