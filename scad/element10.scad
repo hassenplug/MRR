@@ -71,7 +71,7 @@ module rivets() {
 frame_w = 1/16;
 
 // Roller slots
-roller_count  = 11;
+roller_count  = 13;
 roller_h_size = 3/16;   // top-to-bottom thickness of each roller slot
 roller_r      = roller_h_size / 2;
 
@@ -81,8 +81,8 @@ roller_inset_y = (plate_d / 10) / 2;
 roller_zone_w  = plate_w - 2 * roller_inset_x;
 roller_zone_d  = plate_d - 2 * roller_inset_y;
 
-// Gap between rollers: split remaining vertical space evenly across 12 gaps
-roller_gap = (roller_zone_d - roller_count * roller_h_size) / (roller_count + 1);
+// Step between roller centers: first and last align with top/bottom rivets
+roller_step = roller_zone_d / (roller_count - 1);
 
 module roller_slots() {
     // Additional left/right clearzone equal to rivet-to-edge inset
@@ -90,7 +90,7 @@ module roller_slots() {
     roller_x_end   = plate_w - 2 * roller_inset_x;
 
     for (i = [0:roller_count - 1]) {
-        cy = roller_inset_y + roller_gap + roller_r + i * (roller_h_size + roller_gap);
+        cy = roller_inset_y + i * roller_step;
         translate([0, 0, -0.001])
         // Stadium shape: hull of two cylinders
         hull() {
@@ -112,7 +112,7 @@ module rollers() {
     color("green")
     difference() {
         for (i = [0:roller_count - 1]) {
-            cy = roller_inset_y + roller_gap + roller_r + i * (roller_h_size + roller_gap);
+            cy = roller_inset_y + i * roller_step;
             hull() {
                 translate([roller_x_start + roller_r, cy, 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
@@ -149,12 +149,15 @@ module plate() {
     }
 }
 
-arrow_h       = 3/4 * plate_d;
-arrow_w       = belt_w * 0.9;
-arrow_outline = 1/8;
-arrow_head_h  = arrow_h * 0.4;
-arrow_shaft_h = arrow_h - arrow_head_h;
+arrow_w       = belt_w * 0.75;
+arrow_h       = 1/2 * plate_d;
+
+arrow_outline = 1/16;
+
+arrow_head_h  = arrow_w / 2;               // 90 deg tip
+
 arrow_shaft_w = arrow_w * 0.4;
+arrow_shaft_h = arrow_h - arrow_head_h;
 
 module arrow_2d() {
     polygon([
