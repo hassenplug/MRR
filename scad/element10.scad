@@ -150,7 +150,8 @@ module plate() {
 }
 
 arrow_w       = belt_w * 0.75;
-arrow_h       = 1/2 * plate_d;
+arrow_y       = 3 * plate_d / 20;  // bottom of shaft: second-from-bottom rivet
+arrow_h       = 7 * plate_d / 10;  // top of head: second-from-top rivet
 
 arrow_outline = 1/16;
 
@@ -172,7 +173,7 @@ module arrow_2d() {
 }
 
 module arrow_cutout() {
-    translate([plate_w/2, (plate_d - arrow_h)/2, -0.001])
+    translate([plate_w/2, arrow_y, -0.001])
     linear_extrude(plate_h + 0.002)
     difference() {
         arrow_2d();
@@ -182,7 +183,7 @@ module arrow_cutout() {
 
 module arrow() {
     color("green")
-    translate([plate_w/2, (plate_d - arrow_h)/2, 0])
+    translate([plate_w/2, arrow_y, 0])
     linear_extrude(plate_h)
     difference() {
         arrow_2d();
