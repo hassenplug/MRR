@@ -70,37 +70,6 @@ module rivets() {
 
 frame_w = 1/16;
 
-// Roller slots radiating from upper-right rivet toward right and top rivets
-roller_count  = 13;
-roller_h_size = 3/16;
-roller_r      = roller_h_size / 2;
-
-roller_inset_x = (plate_w / 10) / 2;
-roller_inset_y = (plate_d / 10) / 2;
-
-// Hub: upper-right rivet
-hub_x = plate_w - roller_inset_x;
-hub_y = plate_d - roller_inset_y;
-
-// Radial extent matches element10 x_start / x_end clearzone
-roller_inner_dist = 2 * roller_inset_x;
-roller_outer_dist = plate_w - 2 * roller_inset_x;
-
-module roller_slots() {
-    for (i = [0:roller_count - 1]) {
-        a = 270 + i * (180 - 270) / (roller_count - 1);
-        translate([0, 0, -0.001])
-        hull() {
-            translate([hub_x + (roller_inner_dist + roller_r) * cos(a),
-                       hub_y + (roller_inner_dist + roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-            translate([hub_x + (roller_outer_dist - roller_r) * cos(a),
-                       hub_y + (roller_outer_dist - roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-        }
-    }
-}
-
 belt_w = 1.75;
 
 // Belt arc: center at top-right corner, radius = plate_w/2.
@@ -112,6 +81,39 @@ belt_outer_r = arc_r + belt_w / 2;
 rivet_inset  = (plate_w / 10) / 2;
 arc_fn       = 40;
 
+// Roller slots radiating from belt arc center, fanning 270°→180°
+roller_count  = 13;
+roller_h_size = 3/16;
+roller_r      = roller_h_size / 2;
+
+roller_inset_x = (plate_w / 10) / 2;
+roller_inset_y = (plate_d / 10) / 2;
+
+// Near end = element10 roller_x_end distance from hub; far end = roller_x_start distance.
+// Midpoint lands at plate_w/2 (plate center) so rollers are centered on the plate.
+roller_inner_r = roller_inset_x;
+roller_outer_r = plate_w - 3 * roller_inset_x;
+
+// Hub inset from corner by rivet_inset so end rollers align with rivet columns
+roller_hub_x = arc_cx - roller_inset_x;
+roller_hub_y = arc_cy - roller_inset_y;
+
+module roller_slots() {
+    for (i = [0:roller_count - 1]) {
+        a = 270 + i * (180 - 270) / (roller_count - 1);
+        translate([0, 0, -0.001])
+        hull() {
+            translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
+                       roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
+                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+            translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
+                       roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
+                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+        }
+    }
+}
+
+// Belt arc polygon: inner arc CW (right→top), outer arc CCW (top→right).
 // Each arc radius crosses the rivet line at a different angle offset from 270°/180°.
 // inner: asin(rivet_inset / belt_inner_r), outer: asin(rivet_inset / belt_outer_r)
 // This gives a vertical right face and horizontal top face on the belt polygon.
@@ -146,11 +148,11 @@ module rollers() {
         for (i = [0:roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
             hull() {
-                translate([hub_x + (roller_inner_dist + roller_r) * cos(a),
-                           hub_y + (roller_inner_dist + roller_r) * sin(a), 0])
+                translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
+                           roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([hub_x + (roller_outer_dist - roller_r) * cos(a),
-                           hub_y + (roller_outer_dist - roller_r) * sin(a), 0])
+                translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
+                           roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
             }
         }
