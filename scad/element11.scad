@@ -100,12 +100,26 @@ roller_hub_x = arc_cx - roller_inset_x;
 roller_hub_y = arc_cy - roller_inset_y;
 
 module roller_slots() {
-    for (i = [0:roller_count - 1]) {
+    // Full slot (inner + outer) at red roller positions
+    for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
         a = 270 + i * (180 - 270) / (roller_count - 1);
         translate([0, 0, -0.001])
         hull() {
             translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
                        roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
+                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+            translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
+                       roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
+                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+        }
+    }
+    // Outer half only at green-only positions
+    for (i = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11]) {
+        a = 270 + i * (180 - 270) / (roller_count - 1);
+        translate([0, 0, -0.001])
+        hull() {
+            translate([roller_hub_x + (roller_mid_r + roller_r) * cos(a),
+                       roller_hub_y + (roller_mid_r + roller_r) * sin(a), 0])
                 cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
             translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
                        roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
