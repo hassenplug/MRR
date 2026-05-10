@@ -93,6 +93,7 @@ roller_inset_y = (plate_d / 10) / 2;
 // Midpoint lands at plate_w/2 (plate center) so rollers are centered on the plate.
 roller_inner_r = roller_inset_x;
 roller_outer_r = plate_w - 3 * roller_inset_x;
+roller_mid_r   = (roller_inner_r + roller_outer_r) / 2;
 
 // Hub inset from corner by rivet_inset so end rollers align with rivet columns
 roller_hub_x = arc_cx - roller_inset_x;
@@ -142,14 +143,32 @@ module belt_cutout() {
     belt_arc_2d();
 }
 
-module rollers() {
-    color("green")
+module rollers_red() {
+    color("red")
     difference() {
         for (i = [0:roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
             hull() {
                 translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
                            roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
+                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                translate([roller_hub_x + (roller_mid_r - roller_r) * cos(a),
+                           roller_hub_y + (roller_mid_r - roller_r) * sin(a), 0])
+                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+            }
+        }
+        belt_cutout();
+    }
+}
+
+module rollers() {
+    color("green")
+    difference() {
+        for (i = [0:roller_count - 1]) {
+            a = 270 + i * (180 - 270) / (roller_count - 1);
+            hull() {
+                translate([roller_hub_x + (roller_mid_r + roller_r) * cos(a),
+                           roller_hub_y + (roller_mid_r + roller_r) * sin(a), 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
                 translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
                            roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
@@ -235,6 +254,7 @@ module belt() {
 frame();
 plate();
 rivets();
+rollers_red();
 rollers();
 belt();
 arrow();
