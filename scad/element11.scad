@@ -146,7 +146,7 @@ module belt_cutout() {
 module rollers_red() {
     color("red")
     difference() {
-        for (i = [0:roller_count - 1]) {
+        for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
             hull() {
                 translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
