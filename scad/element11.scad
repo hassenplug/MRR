@@ -135,6 +135,10 @@ module roller_slots() {
 belt_inner_da = asin(rivet_inset / belt_inner_r);
 belt_outer_da = asin(rivet_inset / belt_outer_r);
 
+// Exact x extents of the belt where it exits the top edge
+belt_top_x1 = arc_cx + belt_outer_r * cos(180 + belt_outer_da);  // left (outer)
+belt_top_x2 = arc_cx + belt_inner_r * cos(180 + belt_inner_da);  // right (inner)
+
 // CCW polygon: inner arc CW (right→top), then outer arc CCW (top→right).
 // Closing edges are automatically vertical (right) and horizontal (top).
 module belt_arc_2d(margin = 0) {
@@ -204,14 +208,14 @@ module frame() {
 }
 
 module belt_top_cap_cutout() {
-    translate([(plate_w - belt_w) / 2, plate_d - rivet_inset, -0.001])
-        cube([belt_w, rivet_inset + 0.001, plate_h + 0.002]);
+    translate([belt_top_x1, plate_d - rivet_inset, -0.001])
+        cube([belt_top_x2 - belt_top_x1, rivet_inset + 0.001, plate_h + 0.002]);
 }
 
 module belt_top_cap() {
     color("black")
-    translate([(plate_w - belt_w) / 2, plate_d - rivet_inset, 0])
-        cube([belt_w, rivet_inset, plate_h]);
+    translate([belt_top_x1, plate_d - rivet_inset, 0])
+        cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h]);
 }
 
 module plate() {
