@@ -70,29 +70,32 @@ module rivets() {
 
 frame_w = 1/16;
 
-// Roller slots (unchanged from element10)
+// Roller slots radiating from upper-right rivet toward right and top rivets
 roller_count  = 13;
 roller_h_size = 3/16;
 roller_r      = roller_h_size / 2;
 
 roller_inset_x = (plate_w / 10) / 2;
 roller_inset_y = (plate_d / 10) / 2;
-roller_zone_w  = plate_w - 2 * roller_inset_x;
-roller_zone_d  = plate_d - 2 * roller_inset_y;
 
-roller_step = roller_zone_d / (roller_count - 1);
+// Hub: upper-right rivet
+hub_x = plate_w - roller_inset_x;
+hub_y = plate_d - roller_inset_y;
+
+// Radial extent matches element10 x_start / x_end clearzone
+roller_inner_dist = 2 * roller_inset_x;
+roller_outer_dist = plate_w - 2 * roller_inset_x;
 
 module roller_slots() {
-    roller_x_start = 2 * roller_inset_x;
-    roller_x_end   = plate_w - 2 * roller_inset_x;
-
     for (i = [0:roller_count - 1]) {
-        cy = roller_inset_y + i * roller_step;
+        a = 270 + i * (180 - 270) / (roller_count - 1);
         translate([0, 0, -0.001])
         hull() {
-            translate([roller_x_start + roller_r, cy, 0])
+            translate([hub_x + (roller_inner_dist + roller_r) * cos(a),
+                       hub_y + (roller_inner_dist + roller_r) * sin(a), 0])
                 cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-            translate([roller_x_end - roller_r, cy, 0])
+            translate([hub_x + (roller_outer_dist - roller_r) * cos(a),
+                       hub_y + (roller_outer_dist - roller_r) * sin(a), 0])
                 cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
         }
     }
@@ -138,17 +141,16 @@ module belt_cutout() {
 }
 
 module rollers() {
-    roller_x_start = 2 * roller_inset_x;
-    roller_x_end   = plate_w - 2 * roller_inset_x;
-
     color("green")
     difference() {
         for (i = [0:roller_count - 1]) {
-            cy = roller_inset_y + i * roller_step;
+            a = 270 + i * (180 - 270) / (roller_count - 1);
             hull() {
-                translate([roller_x_start + roller_r, cy, 0])
+                translate([hub_x + (roller_inner_dist + roller_r) * cos(a),
+                           hub_y + (roller_inner_dist + roller_r) * sin(a), 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([roller_x_end - roller_r, cy, 0])
+                translate([hub_x + (roller_outer_dist - roller_r) * cos(a),
+                           hub_y + (roller_outer_dist - roller_r) * sin(a), 0])
                     cylinder(h = plate_h, r = roller_r, $fn = 20);
             }
         }
