@@ -139,6 +139,10 @@ belt_outer_da = asin(rivet_inset / belt_outer_r);
 belt_top_x1 = arc_cx + belt_outer_r * cos(180 + belt_outer_da);  // left (outer)
 belt_top_x2 = arc_cx + belt_inner_r * cos(180 + belt_inner_da);  // right (inner)
 
+// Exact y extents of the belt where it exits the right edge
+belt_right_y1 = arc_cy + belt_outer_r * sin(270 - belt_outer_da);  // bottom (outer)
+belt_right_y2 = arc_cy + belt_inner_r * sin(270 - belt_inner_da);  // top (inner)
+
 // CCW polygon: inner arc CW (right→top), then outer arc CCW (top→right).
 // Closing edges are automatically vertical (right) and horizontal (top).
 module belt_arc_2d(margin = 0) {
@@ -218,6 +222,17 @@ module belt_top_cap() {
         cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h]);
 }
 
+module belt_right_cap_cutout() {
+    translate([plate_w - rivet_inset, belt_right_y1, -0.001])
+        cube([rivet_inset + 0.001, belt_right_y2 - belt_right_y1, plate_h + 0.002]);
+}
+
+module belt_right_cap() {
+    color("black")
+    translate([plate_w - rivet_inset, belt_right_y1, 0])
+        cube([rivet_inset, belt_right_y2 - belt_right_y1, plate_h]);
+}
+
 module plate() {
     difference() {
         color("darkgray")
@@ -226,6 +241,7 @@ module plate() {
         roller_slots();
         belt_cutout();
         belt_top_cap_cutout();
+        belt_right_cap_cutout();
     }
 }
 
@@ -288,4 +304,5 @@ rollers_red();
 rollers();
 belt();
 belt_top_cap();
+belt_right_cap();
 arrow();
