@@ -203,6 +203,17 @@ module frame() {
     }
 }
 
+module belt_top_cap_cutout() {
+    translate([(plate_w - belt_w) / 2, plate_d - rivet_inset, -0.001])
+        cube([belt_w, rivet_inset + 0.001, plate_h + 0.002]);
+}
+
+module belt_top_cap() {
+    color("black")
+    translate([(plate_w - belt_w) / 2, plate_d - rivet_inset, 0])
+        cube([belt_w, rivet_inset, plate_h]);
+}
+
 module plate() {
     difference() {
         color("darkgray")
@@ -210,6 +221,7 @@ module plate() {
         rivet_holes();
         roller_slots();
         belt_cutout();
+        belt_top_cap_cutout();
     }
 }
 
@@ -271,4 +283,5 @@ rivets();
 rollers_red();
 rollers();
 belt();
+belt_top_cap();
 arrow();
