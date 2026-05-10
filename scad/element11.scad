@@ -158,7 +158,7 @@ module belt_cutout() {
 }
 
 module rollers_red() {
-    color("red")
+    color("green")
     difference() {
         for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
