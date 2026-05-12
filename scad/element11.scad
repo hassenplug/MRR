@@ -14,7 +14,7 @@ module rivet_holes() {
     spacing_y = plate_d / 10;
     inset_x   = spacing_x / 2;
     inset_y   = spacing_y / 2;
-/*
+
     // Front edge
     for (i = [0:9])
         translate([inset_x + i * spacing_x, inset_y, -1])
@@ -24,7 +24,7 @@ module rivet_holes() {
     for (i = [0:9])
         translate([inset_x + i * spacing_x, plate_d - inset_y, -1])
             cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-*/
+
     // Left edge
     for (i = [0:9])
         translate([inset_x, inset_y + i * spacing_y, -1])
@@ -45,7 +45,7 @@ module rivets() {
     inset_y   = spacing_y / 2;
 
     color("lightgray") {
-/*
+
         // Front edge
         for (i = [0:9])
             translate([inset_x + i * spacing_x, inset_y, 0])
@@ -55,7 +55,7 @@ module rivets() {
         for (i = [0:9])
             translate([inset_x + i * spacing_x, plate_d - inset_y, 0])
                 cylinder(h = rivet_h, r = hole_r, $fn = 20);
-*/
+
         // Left edge
         for (i = [0:9])
             translate([inset_x, inset_y + i * spacing_y, 0])
@@ -99,34 +99,6 @@ roller_mid_r   = (roller_inner_r + roller_outer_r) / 2;
 roller_hub_x = arc_cx - roller_inset_x;
 roller_hub_y = arc_cy - roller_inset_y;
 
-module roller_slots() {
-    // Full slot (inner + outer) at red roller positions
-    for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
-        a = 270 + i * (180 - 270) / (roller_count - 1);
-        translate([0, 0, -0.001])
-        hull() {
-            translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
-                       roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-            translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
-                       roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-        }
-    }
-    // Outer half only at green-only positions
-    for (i = [1, 2, 3, 4, 5, 7, 8, 9, 10, 11]) {
-        a = 270 + i * (180 - 270) / (roller_count - 1);
-        translate([0, 0, -0.001])
-        hull() {
-            translate([roller_hub_x + (roller_mid_r + roller_r) * cos(a),
-                       roller_hub_y + (roller_mid_r + roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-            translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
-                       roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-        }
-    }
-}
 
 // Belt arc polygon: inner arc CW (right→top), outer arc CCW (top→right).
 // Each arc radius crosses the rivet line at a different angle offset from 270°/180°.
@@ -165,39 +137,71 @@ module belt_cutout() {
     belt_arc_2d();
 }
 
-module rollers_red() {
-    color("green")
-    difference() {
+module rollers_inside(cutout = false) {
+    if (cutout) {
+        // Full slot (inner through outer) so inner and outer rollers share one opening
         for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
+            translate([0, 0, -0.001])
             hull() {
                 translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
                            roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([roller_hub_x + (roller_mid_r - roller_r) * cos(a),
-                           roller_hub_y + (roller_mid_r - roller_r) * sin(a), 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
+                           roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
+                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
             }
         }
-        belt_cutout();
+    } else {
+        color("green")
+        difference() {
+            for (i = [0, (roller_count - 1) / 2, roller_count - 1]) {
+                a = 270 + i * (180 - 270) / (roller_count - 1);
+                hull() {
+                    translate([roller_hub_x + (roller_inner_r + roller_r) * cos(a),
+                               roller_hub_y + (roller_inner_r + roller_r) * sin(a), 0])
+                        cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    translate([roller_hub_x + (roller_mid_r - roller_r) * cos(a),
+                               roller_hub_y + (roller_mid_r - roller_r) * sin(a), 0])
+                        cylinder(h = plate_h, r = roller_r, $fn = 20);
+                }
+            }
+//            belt_cutout();
+        }
     }
 }
 
-module rollers() {
-    color("green")
-    difference() {
+module rollers(cutout = false) {
+    if (cutout) {
+        // Outer half at all roller positions
         for (i = [0:roller_count - 1]) {
             a = 270 + i * (180 - 270) / (roller_count - 1);
+            translate([0, 0, -0.001])
             hull() {
                 translate([roller_hub_x + (roller_mid_r + roller_r) * cos(a),
                            roller_hub_y + (roller_mid_r + roller_r) * sin(a), 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
                 translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
                            roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
             }
         }
-        belt_cutout();
+    } else {
+        color("green")
+        difference() {
+            for (i = [0:roller_count - 1]) {
+                a = 270 + i * (180 - 270) / (roller_count - 1);
+                hull() {
+                    translate([roller_hub_x + (roller_mid_r + roller_r) * cos(a),
+                               roller_hub_y + (roller_mid_r + roller_r) * sin(a), 0])
+                        cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    translate([roller_hub_x + (roller_outer_r - roller_r) * cos(a),
+                               roller_hub_y + (roller_outer_r - roller_r) * sin(a), 0])
+                        cylinder(h = plate_h, r = roller_r, $fn = 20);
+                }
+            }
+//            belt_cutout();
+        }
     }
 }
 
@@ -211,49 +215,47 @@ module frame() {
     }
 }
 
-module belt_top_cap_cutout() {
-    translate([belt_top_x1, plate_d - rivet_inset, -0.001])
-        cube([belt_top_x2 - belt_top_x1, rivet_inset + 0.001, plate_h + 0.002]);
-}
-
-module belt_top_cap() {
-    color("black")
-    translate([belt_top_x1, plate_d - rivet_inset, 0])
-        cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h]);
-}
-
-module belt_right_cap_cutout() {
-    translate([plate_w - rivet_inset, belt_right_y1, -0.001])
-        cube([rivet_inset + 0.001, belt_right_y2 - belt_right_y1, plate_h + 0.002]);
-}
-
-module belt_right_cap() {
-    color("black")
-    translate([plate_w - rivet_inset, belt_right_y1, 0])
-        cube([rivet_inset, belt_right_y2 - belt_right_y1, plate_h]);
-}
-
-module plate() {
-    difference() {
-        color("darkgray")
-            cube([plate_w, plate_d, plate_h]);
-        rivet_holes();
-        roller_slots();
-        belt_cutout();
-        belt_top_cap_cutout();
-        belt_right_cap_cutout();
+module belt_top_cap(cutout = false) {
+    if (cutout) {
+        translate([belt_top_x1, plate_d - rivet_inset, -0.001])
+            cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h + 0.002]);
+    } else {
+        color("black")
+        difference() {
+            translate([belt_top_x1, plate_d - rivet_inset, 0])
+                cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h]);
+            belt_cutout();
+        }
     }
 }
 
-// Arrow — identical to element10, unchanged
+module belt_right_cap(cutout = false) {
+    if (cutout) {
+        translate([plate_w - rivet_inset, belt_right_y1, -0.001])
+            cube([rivet_inset, belt_right_y2 - belt_right_y1, plate_h + 0.002]);
+    } else {
+        color("black")
+        difference() {
+            translate([plate_w - rivet_inset, belt_right_y1, 0])
+                cube([rivet_inset, belt_right_y2 - belt_right_y1, plate_h]);
+            belt_cutout();
+        }
+    }
+}
+
+module plate() {
+    color("darkgray")
+        cube([plate_w, plate_d, plate_h]);
+}
+
+// Arrow
 arrow_w       = belt_w * 0.75;
-arrow_y       = 3 * plate_d / 20;  // bottom of shaft: second-from-bottom rivet
-arrow_h       = 7 * plate_d / 10;  // top of head: second-from-top rivet
+arrow_y       = 5 * plate_d / 20;
+arrow_h       = 7 * plate_d / 10;
 
 arrow_outline = 1/16;
 
-arrow_head_h  = arrow_w / 2;               // 90 deg tip
-
+arrow_head_h  = arrow_w / 2;
 arrow_shaft_w = arrow_w * 0.4;
 arrow_shaft_h = arrow_h - arrow_head_h;
 
@@ -293,16 +295,51 @@ module belt() {
     difference() {
         linear_extrude(plate_h)
         belt_arc_2d();
-        arrow_cutout();
+//        arrow_cutout();
     }
 }
 
+// frame
 frame();
-plate();
-rivets();
-rollers_red();
-rollers();
-belt();
-belt_top_cap();
-belt_right_cap();
+
+// plate
+difference() {
+    plate();
+    rivet_holes();
+    rollers_inside(cutout = true);
+    rollers(cutout = true);
+    belt_cutout();
+    belt_top_cap(cutout = true);
+    belt_right_cap(cutout = true);
+}
+
+// rivets
+difference() {
+    rivets();
+    rollers_inside(cutout = true);
+    rollers(cutout = true);
+}
+
+// rollers
+difference() {
+    union() {
+        rollers();
+        rollers_inside();
+    }
+    belt_cutout();
+    belt_top_cap(cutout = true);
+    belt_right_cap(cutout = true);
+}
+
+// belt
+difference() {
+    union() {
+        belt();
+        belt_top_cap();
+        belt_right_cap();
+    }
+    arrow_cutout();
+}
+
+// arrow
 arrow();
