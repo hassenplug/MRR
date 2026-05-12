@@ -36,8 +36,6 @@ module rivet_holes() {
             cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
 }
 
-rivet_h = plate_h;
-
 module rivets() {
     spacing_x = plate_w / 10;
     spacing_y = plate_d / 10;
@@ -49,22 +47,22 @@ module rivets() {
         // Front edge
         for (i = [0:9])
             translate([inset_x + i * spacing_x, inset_y, 0])
-                cylinder(h = rivet_h, r = hole_r, $fn = 20);
+                cylinder(h = plate_h, r = hole_r, $fn = 20);
 
         // Back edge
         for (i = [0:9])
             translate([inset_x + i * spacing_x, plate_d - inset_y, 0])
-                cylinder(h = rivet_h, r = hole_r, $fn = 20);
+                cylinder(h = plate_h, r = hole_r, $fn = 20);
 
         // Left edge
         for (i = [0:9])
             translate([inset_x, inset_y + i * spacing_y, 0])
-                cylinder(h = rivet_h, r = hole_r, $fn = 20);
+                cylinder(h = plate_h, r = hole_r, $fn = 20);
 
         // Right edge
         for (i = [0:9])
             translate([plate_w - inset_x, inset_y + i * spacing_y, 0])
-                cylinder(h = rivet_h, r = hole_r, $fn = 20);
+                cylinder(h = plate_h, r = hole_r, $fn = 20);
     }
 }
 
@@ -166,7 +164,6 @@ module rollers_inside(cutout = false) {
                         cylinder(h = plate_h, r = roller_r, $fn = 20);
                 }
             }
-//            belt_cutout();
         }
     }
 }
@@ -200,7 +197,6 @@ module rollers(cutout = false) {
                         cylinder(h = plate_h, r = roller_r, $fn = 20);
                 }
             }
-//            belt_cutout();
         }
     }
 }
@@ -224,7 +220,6 @@ module belt_top_cap(cutout = false) {
         difference() {
             translate([belt_top_x1, plate_d - rivet_inset, 0])
                 cube([belt_top_x2 - belt_top_x1, rivet_inset, plate_h]);
-            belt_cutout();
         }
     }
 }
@@ -238,7 +233,6 @@ module belt_right_cap(cutout = false) {
         difference() {
             translate([plate_w - rivet_inset, belt_right_y1, 0])
                 cube([rivet_inset, belt_right_y2 - belt_right_y1, plate_h]);
-            belt_cutout();
         }
     }
 }
