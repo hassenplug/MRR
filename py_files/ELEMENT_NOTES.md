@@ -159,26 +159,97 @@ covers the vertical straight segment between `Y_MERGE` and `Y_ARC_CENTER`.
 
 ---
 
-## Rollers (element10.scad)
+## Rollers
 
 ```
-ROLLER_COUNT  = 13 per side
-ROLLER_H_IN   = 3/16"     slot height
+ROLLER_COUNT  = 13
+ROLLER_H_IN   = 3/16"     slot height  →  ROLLER_D = round(_in(3/16) / 2) ≈ 16 px (cap radius)
 ROLLER_INSET  = (plate_w / 10) / 2 = 0.14375"
-ROLLER_X_START = 2 * ROLLER_INSET  = 0.2875" from plate edge
-ROLLER_X_END   = plate_w - 2*ROLLER_INSET = 2.5875" from plate edge
+_rx_start     = _in(frame_w + 2*ROLLER_INSET) ≈ 58 px from tile edge   (bar/bar-column start)
+_rx_end       = _in(frame_w + plate_w - 2*ROLLER_INSET) ≈ 442 px       (bar/bar-column end)
+_ry_step      = _in((plate_w - 2*ROLLER_INSET) / 12) ≈ 36 px           (spacing between bars)
 ```
 
-Roller bars are horizontal stadium shapes (hull of two cylinders), spanning from X_START to X_END.
-Y positions: evenly spaced from top to bottom of plate interior.
+Roller bars are stadium shapes (capsule = rectangle + two semicircle caps).
+The belt is drawn over the rollers, so only portions outside the belt are visible.
 
-**Roller placement rules:**
-- Straight only (E10): rollers on both sides (left strip + right strip of belt)
-- Left turn entry (E12, E13): rollers on right side only
-- Right turn entry (E11, E14): rollers on left side only
-- Both sides occupied (E15, E16): bottom rollers (horizontal bars in lower half)
+All elements use the unified `_element_rollers()` function, which assembles up to five
+component types depending on the element's straight/left/right flags.
 
-Rollers are hidden behind (clipped by) belt and frame.
+### Key belt-edge pixel values
+
+```
+b_top = Y_ENTRY - BELT_HALF = 104 px    top edge of horizontal entry belt
+b_bot = Y_ENTRY + BELT_HALF = 396 px    bottom edge of horizontal entry belt
+b_L   = CX - BELT_HALF     = 104 px    left edge of straight/arc belt
+b_R   = CX + BELT_HALF     = 396 px    right edge of straight/arc belt
+nub   = _rx_end - b_R      ≈  46 px    extension past belt edge (matches normal bar nubs)
+```
+
+Note: `b_top == b_L` and `b_bot == b_R` (both = 104 and 396) due to tile symmetry.
+
+### 1. Horizontal bars
+
+At every ROLLER_YS_SCAD position (13 total), PIL y = SIZE − SCAD_Y:
+
+- **Non-straight elements**: skip bars where PIL y > Y_ARC_CENTER (only top-section bars drawn).
+- **ROLLER_YS_SCAD[-1]** (topmost, PIL y ≈ 34) and **ROLLER_YS_SCAD[0]** (bottommost, PIL y ≈ 466)
+  are always full-width (`_rx_start` to `_rx_end`).
+- **All other bars** are clipped at the belt edge on each active turn side:
+  - `left_turn` and (bar is in top section OR non-straight): `x_lo = b_L`
+  - `right_turn` and (bar is in top section OR non-straight): `x_hi = b_R`
+  - For straight+turn elements, bars below `b_bot` are also clipped on the turn side.
+
+### 2. Vertical entry bars
+
+For each active turn side:
+
+- **Right side** (right_turn): `rx = ry_scad`; skip if `rx < CX_R` (330).
+- **Left side** (left_turn): `rx = SIZE − ry_scad`; skip if `rx > CX_L` (170).
+- **ROLLER_YS_SCAD[-1] bar** (outermost column): full height — `y_lo = _rx_start`, `y_hi = SIZE − _rx_start`.
+- **All other bars**: `y_lo = b_top`; `y_hi = b_bot` if straight, else `SIZE − _rx_start`.
+
+### 3. 45° diagonal corner bars
+
+A short capsule bar (length = `nub` ≈ 46 px) at 45° fills the corner gap between the outermost
+horizontal bar nub and the outermost vertical entry bar nub at each active belt corner:
+
+| Corner | Position | Angle | Condition |
+|--------|----------|-------|-----------|
+| Top-left | (b_L, b_top) | −135° (up-left) | left_turn |
+| Bottom-left | (b_L, b_bot) | +135° (down-left) | left_turn AND straight |
+| Top-right | (b_R, b_top) | −45° (up-right) | right_turn |
+| Bottom-right | (b_R, b_bot) | +45° (down-right) | right_turn AND straight |
+
+### 4. Arc radial bars (E11 and E12 only)
+
+Only drawn when `not straight` and exactly one of left/right turn is active.
+
+- **11 bars** (ROLLER_COUNT − 2), evenly spaced with a 2.25° end-gap margin at each end
+  (= quarter of the per-bar angular spacing).
+- `r_outer ≈ 256 px` — outer cap edge aligns with the extent of straight bars at the tile edge.
+- E11 (right turn): center `(CX_R=330, Y_ARC_CENTER=170)`, angles 90°–180°.
+- E12 (left turn): center `(CX_L=170, Y_ARC_CENTER=170)`, angles 0°–90°.
+
+### 5. E16 bottom vertical bars (E16 only)
+
+Only drawn when `not straight` and both left_turn and right_turn are active.
+
+- Vertical capsules at every ROLLER_YS_SCAD X position (13 total, spanning full tile width).
+- `y_lo = b_bot − round(BELT_HALF × 0.9)` ≈ 265 px — extends bars under the belt from the bottom.
+- `y_hi = SIZE − _rx_start` ≈ 442 px.
+
+### Roller strategy per element
+
+| Element | Horiz bars | Entry bars | Arc bars | Corner diags | Bottom bars |
+|---------|------------|------------|----------|--------------|-------------|
+| E10 | 13, full-width | — | — | — | — |
+| E11 | top section, right-clipped | right-side | 11 radial (CX_R, 90°–180°) | top-right | — |
+| E12 | top section, left-clipped | left-side | 11 radial (CX_L, 0°–90°) | top-left | — |
+| E13 | 13, left-clipped | left-side | — | top-left + bottom-left | — |
+| E14 | 13, right-clipped | right-side | — | top-right + bottom-right | — |
+| E15 | 13, both-clipped | both sides | — | all 4 corners | — |
+| E16 | top section, both-clipped | both sides | — | top-left + top-right | vertical capsules |
 
 ---
 
@@ -193,6 +264,20 @@ RIVET_STEP   = plate_w / 10 = 0.2875"
 ```
 
 Rivets appear on all 4 edges. Hidden behind belt and frame.
+
+---
+
+## Drawing Order
+
+Layers are painted in this order (later layers cover earlier ones):
+
+1. **Background** — dark gray plate
+2. **Rivets** — light gray circles
+3. **Rollers** — green bars
+4. **Belt** — black strip (covers rivets and rollers underneath)
+5. **Arrow outline** — green (all shafts and arrowhead)
+6. **Arrow interior** — belt color (black); drawn *after* all arrow outlines so it covers any green lines from other shafts that fall inside a shaft's hollow
+7. **Frame** — black border (always on top)
 
 ---
 
@@ -221,5 +306,11 @@ Output: `Images/drawings/Element{N}.jpg`
 
 ## Known Issues / Open Questions
 
-- Roller display thickness is tuned for visibility (`ROLLER_H_IN / 4`), not the actual 3/16" slot height.
-- Curved element rollers are drawn as horizontal bars (left or right of belt); the SCAD uses radial fan-shaped rollers centered on the arc hub.
+- `ROLLER_D = round(_in(ROLLER_H_IN) / 2)` matches the SCAD `roller_r = roller_h_size / 2` radius,
+  so roller bar thickness is accurate, but bars are drawn as straight capsules rather than the SCAD's
+  curved stadium shapes that follow the belt arc.
+- Arc radial bars (E11/E12) are straight radial capsules; the SCAD uses curved bars that follow the
+  belt arc annulus, so the visual differs near the belt edge.
+- E13/E14/E15 bottom corners (bottom-left for E13, bottom-right for E14, all bottom for E15)
+  currently have the diagonal corner bar but are missing the vertical entry bar nub that appears
+  in E11's top-right corner, so those corners show 2 blobs instead of 3.
