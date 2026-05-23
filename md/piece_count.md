@@ -12,9 +12,10 @@
 | Element14 | Modular Arrow Component (Green) | ![Element14](../Images/Later/Element14.jpg) | ![Element13](../Images/Later/Element13.jpg) | 0 | |4 |
 | Element15 | Three-Way Arrow (Green) | ![Element15](../Images/Later/Element15.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | 4 |
 | Element20 | Double Straight Arrow (Blue) | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 24 | |
-| Element20-2 | Double Straight Arrow (Blue) Alt | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | |
-| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element22](../Images/Element22.jpg) | 0 | 8 | |
-| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element21](../Images/Element21.jpg) | 0 | 8 | |
+| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | |
+| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | |
+| Element21-22 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element22](../Images/Element22.jpg) | 0 | 8 | |
+| Element22-21 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element21](../Images/Element21.jpg) | 0 | 8 | |
 | Element25 | Textured Background (Green) | ![Element25](../Images/Element25.jpg) | ![Element0](../Images/Element0.jpg) | 0 | | |
 | Element26 | Straight Arrow (Green Textured) | ![Element26](../Images/Element26.jpg) | ![Element25](../Images/Element25.jpg) | 0 | | 2|
 | Element27 | Curved Arrow Right (Green Textured) | ![Element27](../Images/Element27.jpg) | ![Element28](../Images/Element28.jpg) | 0 | | 2|
