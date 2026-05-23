@@ -53,11 +53,12 @@ def main():
                 return i
         return None
 
-    elem_col = col("Element")
-    back_col = col("Back")
-    need_col = col("Need to Print")
+    elem_col  = col("Element")
+    image_col = col("Image")
+    back_col  = col("Back")
+    need_col  = col("Need to Print")
 
-    if None in (elem_col, back_col, need_col):
+    if None in (elem_col, image_col, back_col, need_col):
         print(f"Could not locate required columns. Found: {headers}")
         sys.exit(1)
 
@@ -73,7 +74,7 @@ def main():
             continue
 
         cells = [c.strip() for c in line.split("|")]
-        if len(cells) <= max(elem_col, back_col, need_col):
+        if len(cells) <= max(elem_col, image_col, back_col, need_col):
             continue
 
         need_str = cells[need_col].strip()
@@ -86,17 +87,18 @@ def main():
             skipped_no_need += 1
             continue
 
-        bottom_id = cells[elem_col].lower()             # Element column = top (plain text)
-        top_id    = parse_element_id(cells[back_col])  # Back= column   = bottom layer (image link)
+        bottom_id = parse_element_id(cells[image_col])  # Image column = bottom layer
+        top_id    = parse_element_id(cells[back_col])   # Back= column = top layer
+        out_name  = cells[elem_col].lower()             # Element column = output file name
 
-        if not top_id or not bottom_id:
+        if not top_id or not bottom_id or not out_name:
             print(f"Skipping row (could not parse element IDs): {line.strip()}")
             skipped_missing += 1
             continue
 
         top_scad    = SCAD_DIR / f"{top_id}.scad"
         bottom_scad = SCAD_DIR / f"{bottom_id}.scad"
-        out_3mf     = OUT_DIR  / f"{bottom_id}.3mf"
+        out_3mf     = OUT_DIR  / f"{out_name}.3mf"
 
         if not top_scad.exists():
             print(f"Skipping {top_id}: {top_scad.relative_to(BASE)} not found")
@@ -107,12 +109,12 @@ def main():
             skipped_missing += 1
             continue
         if out_3mf.exists():
-            print(f"Skipping {bottom_id}: {out_3mf.relative_to(BASE)} already exists")
+            print(f"Skipping {out_name}: {out_3mf.relative_to(BASE)} already exists")
             skipped_exists += 1
             continue
 
         print(f"\n{'='*60}")
-        print(f"Building {top_id}  (need={need})")
+        print(f"Building {out_name}  (need={need})")
         print(f"  Top:    {top_scad.relative_to(BASE)}")
         print(f"  Bottom: {bottom_scad.relative_to(BASE)}")
         print(f"  Output: {out_3mf.relative_to(BASE)}")

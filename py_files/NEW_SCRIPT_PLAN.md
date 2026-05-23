@@ -1,209 +1,280 @@
-# New Element Builder Script — Implementation Plan
+# New Element Builder Script — SCAD Generation Plan
 
-Based entirely on `ELEMENT_NOTES.md`. Do NOT reference `element_builder_agent.py`.
+All geometry defined inline. No external file references.
 
 ---
 
-## Constants (all derived from inches, converted via S)
+## Output
 
-```python
-S = 500 / (3.0 * 25.4)          # px/mm
-SIZE = 500
-CX = 250                         # tile center X
+Python script writes one `.scad` file per element.
 
-def _in(x): return x * 25.4 * S  # inches → px
+```
+python element_scad_builder.py [--elements 10,11,...] [--out scad/]
+```
 
-FRAME_W   = _in(1/16)
-PLATE_W   = _in(2 + 7/8)
-PLATE_BOT = FRAME_W              # PIL Y of plate bottom edge (= top in SCAD)
-BELT_W    = _in(1.75)
-BELT_HALF = BELT_W / 2           # = 104 px (also b_L and b_top by symmetry)
+Output: `scad/element{N}.scad`
 
-# Arrow
-ARROW_W        = BELT_W * 0.75
-ARROW_TIP_IN   = 3*(2+7/8)/20 + 1/4 + 7*(2+7/8)/10   # inches
-ARROW_SHAFT_W  = ARROW_W * 0.4
-ARROW_SHAFT_H  = _in(1.5)
-ARROW_HEAD_H   = ARROW_W / 2
-ARROW_H        = ARROW_SHAFT_H + ARROW_HEAD_H
-ARROW_Y        = _in(ARROW_TIP_IN) - ARROW_H          # shaft base from plate bottom (px)
-OUTLINE        = _in(1/16)
+Each generated file contains: constants block, element flag variables (`straight`, `left_turn`,
+`right_turn`), all module definitions, and a final assembly call.
 
-# Curved belt
-R_CURVE_PX    = 80
-STRAIGHT_PX   = 20
-H_STRAIGHT_PX = 40
-SY1           = PLATE_BOT + ARROW_Y + ARROW_SHAFT_H    # arrowhead base (SCAD Y from bottom, in px)
-Y_MERGE       = SIZE - SY1
-Y_ARC_CENTER  = Y_MERGE + STRAIGHT_PX
-Y_ENTRY       = Y_ARC_CENTER + R_CURVE_PX
-CX_L          = CX - R_CURVE_PX   # = 170
-CX_R          = CX + R_CURVE_PX   # = 330
+---
 
-# Rollers
-ROLLER_COUNT  = 13
-ROLLER_H_IN   = 3/16
-ROLLER_D      = round(_in(ROLLER_H_IN) / 2)
-ROLLER_INSET  = _in((2+7/8) / 10 / 2)
-_rx_start     = _in(1/16) + 2*ROLLER_INSET
-_rx_end       = _in(1/16) + _in(2+7/8) - 2*ROLLER_INSET
-_ry_step      = _in((2+7/8 - 2*(ROLLER_INSET/_in(1))) / 12)  # recalc from notes formula
-b_L  = CX - BELT_HALF   # = 104
-b_R  = CX + BELT_HALF   # = 396
-b_top = Y_ENTRY - BELT_HALF   # = 104 (same as b_L)
-b_bot = Y_ENTRY + BELT_HALF   # = 396 (same as b_R)
-nub  = _rx_end - b_R          # ≈ 46 px
+## Constants (inches — SCAD native units)
 
-# Rivets
-RIVET_N      = 10
-RIVET_R      = _in(3/32) / 2
-RIVET_INSET  = _in((2+7/8)/10/2)
-RIVET_STEP   = _in((2+7/8)/10)
+```
+plate_w = 2 + 7/8          // 2.875
+plate_d = 2 + 7/8
+plate_h = 1/16
+frame_w = 1/16
+
+belt_w    = 1.75
+belt_half = belt_w / 2     // 0.875
+
+hole_d = 3/32
+hole_r = hole_d / 2        // 3/64
+
+roller_count  = 13
+roller_h_size = 3/16
+roller_r      = roller_h_size / 2    // 3/32
+roller_inset  = plate_w / 20         // 0.14375
+roller_x_lo   = 2 * roller_inset     // 0.2875  from plate edge
+roller_x_hi   = plate_w - 2 * roller_inset      // 2.5875
+roller_y_step = (plate_w - 2 * roller_inset) / 12  // 0.215625
+
+b_L = plate_w / 2 - belt_half       // 0.5625  left belt edge (from plate)
+b_R = plate_w / 2 + belt_half       // 2.3125  right belt edge
+nub = roller_x_hi - b_R             // 0.275   bar extension past belt edge
+
+arrow_w       = belt_w * 0.75       // 1.3125
+arrow_shaft_w = arrow_w * 0.4       // 0.525
+arrow_shaft_h = 1.5
+arrow_head_h  = arrow_w / 2         // 0.65625
+arrow_h       = arrow_shaft_h + arrow_head_h    // 2.15625
+arrow_tip_y   = 3*plate_d/20 + 1/4 + 7*plate_d/10  // 2.69375 from plate bottom
+arrow_y       = arrow_tip_y - arrow_h               // 0.5375 shaft base
+arrow_outline = 1/16
+
+// Curved belt (elements 11–16)
+cx         = plate_w / 2            // 1.4375
+r_curve    = 0.48                   // quarter-circle radius (80 px at 500px/3in)
+y_merge    = arrow_y + arrow_shaft_h  // 2.0375  arrowhead base Y from plate bottom
+y_arc_ctr  = y_merge + 0.12          // 2.1575  arc center Y
+y_entry    = y_arc_ctr + r_curve      // 2.6375  belt entry Y on side edge
+cx_l       = cx - r_curve            // 0.9575  left-turn arc center X
+cx_r       = cx + r_curve            // 1.9175  right-turn arc center X
+r_outer    = r_curve + belt_half      // 1.355   arc fill radius (belt_half > r_curve)
+h_straight = 0.24                    // horizontal straight at belt entry for arrow arm
 ```
 
 ---
 
-## Pixel Grid
+## Element Flags
 
-```python
-import numpy as np
-xs = np.arange(SIZE) + 0.5
-ys = np.arange(SIZE) + 0.5
-XX, YY = np.meshgrid(xs, ys)   # YY[0,0] = 0.5 = PIL top
-```
-
----
-
-## Layer Functions (return boolean masks or paint directly)
-
-### 1. `draw_background(img)` — dark gray 500×500, then black frame border
-
-### 2. `rivet_mask()` — 10 circles per side along each edge
-- X positions: `frame_w + rivet_inset + i * rivet_step` for i=0..9
-- Same spacing for Y positions
-- Top/bottom rows: Y = `frame_w + rivet_inset`, `SIZE - frame_w - rivet_inset`
-- Left/right cols: X = same offsets
-- Return disk mask: `(XX-cx)**2 + (YY-cy)**2 <= RIVET_R**2`
-
-### 3. `roller_mask(straight, left_turn, right_turn)` — green capsule bars
-Five sub-components (see ELEMENT_NOTES.md roller strategy table):
-
-**a. Horizontal bars** (all elements):
-- 13 positions: `ry_scad[i] = _rx_start + i * _ry_step`; PIL_Y = SIZE - ry_scad
-- Bar runs from `_rx_start` to `_rx_end` (full), clipped at `b_L`/`b_R` depending on turn flags
-- Topmost (i=12) and bottommost (i=0) always full-width
-- Non-straight: skip bars where `PIL_Y > Y_ARC_CENTER`
-
-**b. Vertical entry bars** (left/right turn):
-- For right_turn: X = ry_scad[i], skip if X < CX_R; vertical capsule
-- For left_turn: X = SIZE - ry_scad[i], skip if X > CX_L; vertical capsule
-- Outermost (i=12): full height `_rx_start` to `SIZE - _rx_start`
-- Others: y_lo = b_top, y_hi = b_bot (straight) or SIZE - _rx_start (non-straight)
-
-**c. Arc radial bars** (E11 right-only, E12 left-only):
-- 11 bars at angles evenly spaced over 90°, with 2.25° end-gap margin
-- r_outer ≈ 256 px, capsule length = nub
-- E11: center (CX_R, Y_ARC_CENTER), angles 90°–180°
-- E12: center (CX_L, Y_ARC_CENTER), angles 0°–90°
-
-**d. Diagonal corner capsules**:
-| Corner | Condition |
-|--------|-----------|
-| top-left (b_L, b_top), angle -135° | left_turn |
-| bottom-left (b_L, b_bot), angle +135° | left_turn AND straight |
-| top-right (b_R, b_top), angle -45° | right_turn |
-| bottom-right (b_R, b_bot), angle +45° | right_turn AND straight |
-
-**e. E16 bottom vertical bars** (not straight AND left AND right):
-- 13 vertical capsules at ry_scad X positions
-- y_lo = b_bot - round(BELT_HALF * 0.9), y_hi = SIZE - _rx_start
-
-### 4. `belt_mask(straight, left_turn, right_turn)` — black
-- Straight component: vertical strip `b_L` to `b_R`, full height
-- Curved components (if left or right turn):
-  - Horizontal entry: `b_top` to `b_bot`, X = 0 to CX_L (left) or CX_R to SIZE (right)
-  - Arc annulus: distance from arc center between `R_CURVE_PX - BELT_HALF` and `R_CURVE_PX + BELT_HALF`, clipped to correct quadrant
-  - Top straight strip: `b_L` to `b_R`, Y = 0 to Y_ARC_CENTER (shared vertical portion)
-
-### 5. `arrow_outline_mask(straight, left_turn, right_turn)` — green
-
-For each active arm (one per straight/left/right), build the arrow polygon mask:
-
-**Straight arm** (pointing up):
-- Shaft: `|XX - CX| <= SHO`, `SY0_pil <= YY <= SY1_pil`
-- Head: triangle from base corners to tip
-- Arrowhead base bar: connects shaft shoulder to head corners horizontally
-- Then subtract inner hollow (offset by OUTLINE inward)
-
-**Curved arms** (left/right):
-- Vertical straight segment: `b_L..b_R`, `Y_MERGE..Y_ARC_CENTER`
-- Arc annulus segment: inner/outer radii `R_CURVE_PX ± BELT_HALF/2` (shaft width), correct quadrant
-- Horizontal straight: `H_STRAIGHT_PX` from arc end toward tile edge
-- End cap: solid 1/16" bar closing the far end
-- No arrowhead for curved arms
-
-### 6. `arrow_interior_mask(straight, left_turn, right_turn)` — black (belt color)
-Drawn AFTER all outlines — covers any green lines inside shaft hollows.
-
-- Per-arm inset version of the shaft outline — the hollow region
-- Straight: `|XX - CX| <= SHI`, inner range (SY0_pil + OUTLINE) to SY1_pil
-- Curved: inset arc annulus hollow + inset horizontal segment hollow
-
-### 7. `draw_frame(img)` — black 1/16" border on all 4 sides
-
----
-
-## Element Table
+Written at the top of each generated `.scad` file:
 
 | Element | straight | left_turn | right_turn |
 |---------|----------|-----------|------------|
-| 10 | True | False | False |
-| 11 | False | False | True |
-| 12 | False | True | False |
-| 13 | True | True | False |
-| 14 | True | False | True |
-| 15 | True | True | True |
-| 16 | False | True | True |
+| 10      | true     | false     | false      |
+| 11      | false    | false     | true       |
+| 12      | false    | true      | false      |
+| 13      | true     | true      | false      |
+| 14      | true     | false     | true       |
+| 15      | true     | true      | true       |
+| 16      | false    | true      | true       |
 
 ---
 
-## Main Loop
+## SCAD Modules
 
-```python
-for N, (straight, left_turn, right_turn) in ELEMENTS.items():
-    img = np.full((SIZE, SIZE, 3), DARK_GRAY, dtype=np.uint8)
-    img[rivet_mask()] = LIGHT_GRAY
-    img[roller_mask(straight, left_turn, right_turn)] = GREEN
-    img[belt_mask(straight, left_turn, right_turn)] = BLACK
-    img[arrow_outline_mask(straight, left_turn, right_turn)] = GREEN
-    img[arrow_interior_mask(straight, left_turn, right_turn)] = BLACK
-    draw_frame(img)
-    Image.fromarray(img).save(f"Images/drawings/Element{N}.jpg")
+### `rivet_holes()` / `rivets()`
+
+10 per edge, all 4 edges.
+- `spacing = plate_w / 10`, `inset = spacing / 2`
+- For each edge, 10 cylinders at `inset + i * spacing` along that edge
+- Front/back edges: skip positions where the rivet circle overlaps any roller slot. Since front/back
+  rivet Y coincides exactly with cy[0] (front) and cy[12] (back), overlap is purely an X check:
+  skip if `x > roller_x_lo + roller_r - hole_r` AND `x < roller_x_hi - roller_r + hole_r`
+  (≈ x ∈ (0.334", 2.541")). This subsumes the belt zone skip since [b_L, b_R] ⊂ this range.
+- `rivet_holes()` — pass-through cylinders subtracted from `plate()`
+- `rivets()` — lightgray cylinders (`h = plate_h`) placed on plate surface
+
+### `frame()`
+
+Black `difference()`: outer cube (plate + `2 * frame_w` each side) minus inner plate void.
+
+### `belt_cutout()`
+
+Pass-through slot at `[(plate_w - belt_w)/2, -ε, -ε]`, size `[belt_w, plate_d + 2ε, plate_h + 2ε]`.
+Subtracted from `plate()` and from `rollers()` green objects.
+
+### `plate()`
+
+`difference()` of darkgray cube: subtract `rivet_holes()`, `roller_slots()`, `belt_cutout()`.
+
+---
+
+### `roller_slots()` / `rollers()`
+
+Both use the same capsule geometry; `roller_slots()` passes through the plate (for printing),
+`rollers()` produces green `hull()` stadiums differenced with `belt_cutout()`.
+
+**a. Horizontal bars** (all elements)
+
+13 Y positions: `cy[i] = roller_inset + i * roller_y_step` for i = 0..12
+
+- i=0 and i=12 (outermost rows): always full-width, `x_lo = roller_x_lo`, `x_hi = roller_x_hi`
+- Non-straight elements: skip bars where `cy[i] < y_arc_ctr` (keep only top-section bars)
+- Left-clipped bars: `x_lo = b_L` on left side
+- Right-clipped bars: `x_hi = b_R` on right side
+- Clipping applies to turn sides; i=0 and i=12 are always full-width regardless
+
+**b. Vertical entry bars** (left_turn or right_turn)
+
+X positions use same `rx[i] = roller_inset + i * roller_y_step` spacing.
+
+- Right side: bar X = `rx[i]`; skip if `rx[i] < cx_r`
+- Left side: bar X = `plate_w - rx[i]`; skip if `plate_w - rx[i] > cx_l`
+- i=12 (outermost column): full height — `y_lo = roller_x_lo`, `y_hi = plate_d - roller_x_lo`
+- All other bars: `y_lo = y_entry - belt_half`; `y_hi = y_entry + belt_half` (straight), else `plate_d - roller_x_lo` (non-straight)
+
+**c. Arc radial bars** (E11 right-only or E12 left-only)
+
+11 bars (not 13), evenly spaced over 90° with 2.25° end-gap margin at each end:
+
+- E11: center `(cx_r, y_arc_ctr)`, angles 90°–180° (standard math)
+- E12: center `(cx_l, y_arc_ctr)`, angles 0°–90°
+- `r_outer_bars = plate_w - roller_x_lo` ≈ 2.5875" (outer cap edge)
+- Capsule length = `nub` (0.275"), each bar is a radial capsule at angle θ
+
+**d. Diagonal corner bars**
+
+Short capsule (`length = nub`, at 45°) at each active belt corner:
+
+| Corner | Position (SCAD) | Angle (SCAD, Y-up) | Condition |
+|--------|-----------------|---------------------|-----------|
+| Top-right   | `(b_R, y_entry - belt_half)` | +45° | right_turn |
+| Bottom-right | `(b_R, y_entry + belt_half)` | −45° | right_turn AND straight |
+| Top-left    | `(b_L, y_entry - belt_half)` | +135° | left_turn |
+| Bottom-left  | `(b_L, y_entry + belt_half)` | −135° | left_turn AND straight |
+
+**e. E16 bottom vertical bars** (not straight AND left_turn AND right_turn)
+
+13 vertical capsules at `rx[i]` X positions:
+- `y_lo = y_entry + belt_half - belt_half * 0.9` ≈ `y_entry + belt_half * 0.1`
+- `y_hi = plate_d - roller_x_lo`
+
+---
+
+### Roller strategy per element
+
+| Element | Horiz bars | Vert entry | Arc bars | Corner diags | Bottom bars |
+|---------|------------|------------|----------|--------------|-------------|
+| E10 | 13, full-width | — | — | — | — |
+| E11 | top-section, right-clipped | right | 11 (cx_r, 90°–180°) | top-right | — |
+| E12 | top-section, left-clipped | left | 11 (cx_l, 0°–90°) | top-left | — |
+| E13 | 13, left-clipped | left | — | top-left + bottom-left | — |
+| E14 | 13, right-clipped | right | — | top-right + bottom-right | — |
+| E15 | 13, both-clipped | both | — | all 4 | — |
+| E16 | top-section, both-clipped | both | — | top-left + top-right | 13 vertical |
+
+"Top-section" = bars where `cy[i] >= y_arc_ctr` (i = 10..12 with corrected cy formula).
+
+---
+
+### `arrow_2d()`
+
+7-point polygon, center at X=0, base at Y=0 (pointing up):
+
+```
+[-arrow_shaft_w/2, 0],  [arrow_shaft_w/2, 0],
+[arrow_shaft_w/2, arrow_shaft_h],  [arrow_w/2, arrow_shaft_h],
+[0, arrow_h],
+[-arrow_w/2, arrow_shaft_h],  [-arrow_shaft_w/2, arrow_shaft_h]
 ```
 
----
+### `arrow()`
 
-## Colors
+**Straight arm** (if `straight`):
 
-```python
-DARK_GRAY  = (64, 64, 64)
-LIGHT_GRAY = (169, 169, 169)
-GREEN      = (0, 128, 0)
-BLACK      = (0, 0, 0)
+```scad
+translate([plate_w/2, arrow_y, 0])
+linear_extrude(plate_h)
+difference() { arrow_2d();  offset(delta = -arrow_outline) arrow_2d(); }
 ```
 
+**Curved arm** (if `left_turn` or `right_turn`):
+
+Green hollow outline (1/16" thick) only — no arrowhead. Per active turn side:
+
+1. Vertical segment: `arrow_shaft_w` wide centered at `cx` (= plate_w/2, both turn sides),
+   from `y_merge` to `y_arc_ctr` (height 0.12").
+   Arc endpoint at 180° (right turn) / 0° (left turn) is at `(cx, y_arc_ctr)` — vertical segment
+   must meet arc there, so center is cx regardless of turn side.
+2. Arc shaft: annulus `linear_extrude(plate_h)` of
+   `difference(circle(r_curve + arrow_shaft_w/2), circle(r_curve - arrow_shaft_w/2))`,
+   clipped to correct 90° quadrant at arc center, minus inner hollow
+   (offset inward by arrow_outline)
+3. Horizontal segment: `h_straight` = 0.24" long from arc endpoint toward tile edge,
+   `arrow_shaft_w` wide, hollow (outline only)
+4. End cap: solid `arrow_outline`-thick bar closing the far end of the horizontal segment
+
 ---
 
-## Capsule Helper
+### `belt()`
 
-```python
-def capsule_mask(XX, YY, x0, y0, x1, y1, r):
-    """Stadium/capsule: all points within r of the segment (x0,y0)-(x1,y1)."""
-    dx, dy = x1-x0, y1-y0
-    len2 = dx*dx + dy*dy
-    t = np.clip(((XX-x0)*dx + (YY-y0)*dy) / len2, 0, 1)
-    dist2 = (XX - (x0 + t*dx))**2 + (YY - (y0 + t*dy))**2
-    return dist2 <= r*r
+**Straight component** (if `straight`):
+
+```scad
+difference() {
+    translate([(plate_w - belt_w)/2, 0, 0]) cube([belt_w, plate_d, plate_h]);
+    arrow_cutout();
+}
+```
+
+Where `arrow_cutout()` is the same `arrow_2d() minus offset(-arrow_outline)` extrusion
+subtracted from the belt so the arrow outline remains visible.
+
+**Curved components** (per active turn side):
+
+1. **Horizontal entry** — black cube from arc center X to tile edge, height `belt_w`,
+   centered on `y_entry`:
+   - Right: `translate([cx_r, y_entry - belt_half, 0]) cube([plate_w - cx_r, belt_w, plate_h])`
+   - Left:  `translate([0,    y_entry - belt_half, 0]) cube([cx_l,            belt_w, plate_h])`
+
+2. **Arc corner fill** — filled quarter-circle of radius `r_outer = r_curve + belt_half`
+   (`belt_half > r_curve` so inner radius is zero; this is a solid sector, not an annulus):
+   ```scad
+   // Right turn: upper-left quadrant of (cx_r, y_arc_ctr)
+   translate([cx_r, y_arc_ctr, 0])
+   linear_extrude(plate_h)
+   intersection() {
+       circle(r = r_outer, $fn = 120);
+       translate([-r_outer, 0]) square([r_outer, r_outer]);
+   }
+
+   // Left turn: upper-right quadrant of (cx_l, y_arc_ctr)
+   translate([cx_l, y_arc_ctr, 0])
+   linear_extrude(plate_h)
+   intersection() {
+       circle(r = r_outer, $fn = 120);
+       square([r_outer, r_outer]);
+   }
+   ```
+
+3. **Top straight strip** — shared vertical belt section above arc center:
+   `translate([b_L, 0, 0]) cube([belt_w, y_arc_ctr, plate_h])`
+
+---
+
+## Assembly
+
+```scad
+frame();
+plate();
+rivets();
+rollers();
+belt();
+arrow();
 ```
 
 ---
@@ -211,5 +282,34 @@ def capsule_mask(XX, YY, x0, y0, x1, y1, r):
 ## CLI
 
 ```
-python element_renderer.py [--elements 10,11,...] [--out DIR]
+python element_scad_builder.py [--elements 10,11,...] [--out DIR]
 ```
+
+---
+
+## Status
+
+### Exists
+
+| File | Notes |
+|------|-------|
+| `scad/element10.scad` | Complete, working — straight tile reference |
+| `py_files/NEW_SCRIPT_PLAN.md` | This file — full geometry spec |
+| `py_files/ELEMENT_NOTES.md` | Pixel-space reference for the Python image generator |
+
+### Missing
+
+| File | Notes |
+|------|-------|
+| `py_files/element_scad_builder.py` | Python generator script — not yet written |
+| `scad/element11.scad` | Right-turn only (straight=false, right_turn=true) — not yet written |
+| `scad/element12.scad` | Left-turn only — not yet written |
+| `scad/element13.scad` | Straight + left turn — not yet written |
+| `scad/element14.scad` | Straight + right turn — not yet written |
+| `scad/element15.scad` | Straight + left + right — not yet written |
+| `scad/element16.scad` | Left + right, no straight — not yet written |
+
+### Approach
+
+Option A: Write `py_files/element_scad_builder.py` to generate all `.scad` files programmatically.  
+Option B: Write each `.scad` file directly by hand, following this spec.

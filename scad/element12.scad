@@ -1,9 +1,9 @@
-// element11.scad — right-turn belt tile
+// element12.scad — left-turn belt tile (mirror of element11)
 // Units: inches
 
 straight   = false;
-left_turn  = false;
-right_turn = true;
+left_turn  = true;
+right_turn = false;
 
 plate_w = 2 + 7/8;
 plate_d = 2 + 7/8;
@@ -268,7 +268,6 @@ module arrow_2d() {
     ]);
 }
 
-
 module arrow() {
     color("green") {
         // Vertical segment: cx, from arc center up to arrowhead base
@@ -396,9 +395,12 @@ module belt() {
     }
 }
 
-frame();
-plate();
-rivets();
-rollers();
-belt();
-arrow();
+translate([plate_w, 0, 0])
+mirror([1, 0, 0]) {
+    frame();
+    plate();
+    rivets();
+    rollers();
+    belt();
+    arrow();
+}
