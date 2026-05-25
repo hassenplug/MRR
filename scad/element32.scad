@@ -19,10 +19,11 @@ tooth_h    = lg_m * 0.6;            // tooth height (shorter than full-depth)
 lg_r_pit   = lg_n * lg_m / 2;       // 0.96
 lg_r_tip   = lg_r_pit + tooth_h;    // 1.032
 lg_r_root  = lg_r_pit - tooth_h;    // 0.888
-lg_mid_r   = 0.38;                   // hub ring center radius
+lg_mid_r   = 0.30;                   // hub ring center radius
 lg_mid_w   = 0.022;                  // hub ring half-width
 lg_r_bore  = lg_mid_r + lg_mid_w;   // gear face extends inward to meet hub ring outer edge
 lg_outline = 0.025;
+arr_outline = 0.020;
 
 // ── Small gear ────────────────────────────────────────────────────────────────
 sg_n       = 10;
@@ -44,12 +45,13 @@ sg_cy      = lg_cy + sg_cd * sin(sg_angle);
 sg_phase   = 9;                      // gap at 315° aligns with lg tooth at 135° (n=10: default gap at 306°, rotate +9°)
 
 // ── Rotation arrows (on gear body, between bore and root) ─────────────────────
-arr_r_in   = lg_r_bore + 0.04;
-arr_r_out  = lg_r_root - 0.05;
+arr_r_in   = lg_r_bore + 0.063;
+arr_r_out  = lg_r_root - 0.073;
 arr_r_mid  = (arr_r_in + arr_r_out) / 2;
 arr_head_h      = 0.20;
 arr_head_w      = arr_r_out - arr_r_in;
-arr_shaft_w     = 0.22;
+arr_head_w_scale = 0.90;
+arr_shaft_w     = 0.176;
 arr_shaft_r_in  = arr_r_mid - arr_shaft_w / 2;
 arr_shaft_r_out = arr_r_mid + arr_shaft_w / 2;
 arr_arrow_span  = 55;
@@ -220,22 +222,34 @@ module annular_sector_2d(r_o, r_i, a1, a2) {
     }
 }
 
-module rotation_arrows() {
-    color([0.74, 0.74, 0.78])
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.003)
+module rotation_arrows_2d() {
     union() {
         for (i = [0:3]) {
             a_head = 20 + i * 90;
             a_tail = a_head + arr_arrow_span;
-            // Narrow shaft arc
             annular_sector_2d(arr_shaft_r_out, arr_shaft_r_in, a_head, a_tail);
-            // Full-width arrowhead at the counter-clockwise end (a_tail)
             translate([arr_r_mid * cos(a_tail), arr_r_mid * sin(a_tail)])
             rotate([0, 0, a_tail])
-            polygon([[0, arr_head_h], [-arr_head_w/2, 0], [arr_head_w/2, 0]]);
+            polygon([[0, arr_head_h], [-arr_head_w*arr_head_w_scale/2, 0], [arr_head_w*arr_head_w_scale/2, 0]]);
         }
     }
+}
+
+module rotation_arrows_outline() {
+    color("black")
+    translate([lg_cx, lg_cy, 0])
+    linear_extrude(plate_h + 0.004)
+    difference() {
+        offset(delta = arr_outline) rotation_arrows_2d();
+        rotation_arrows_2d();
+    }
+}
+
+module rotation_arrows() {
+    color([0.74, 0.74, 0.78])
+    translate([lg_cx, lg_cy, 0])
+    linear_extrude(plate_h + 0.003)
+    rotation_arrows_2d();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -249,5 +263,6 @@ large_gear_outline();
 large_gear();
 large_gear_mid_ring();
 rotation_arrows();
+rotation_arrows_outline();
 small_gear_hub();
 small_gear_mid_ring();
