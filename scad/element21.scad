@@ -152,15 +152,7 @@ module roller_slots() {
                 cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
         }
     }
-    // d. Diagonal corners — lower-right and upper-right of belt entry
-    translate([b_R, plate_d/2 - belt_half, 0])
-    rotate([0, 0, 45])
-    translate([0, 0, -0.001])
-    hull() {
-        cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-        translate([nub, 0, 0])
-            cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-    }
+    // d. Upper diagonal corner — upper-right of belt entry
     translate([b_R, plate_d/2 + belt_half, 0])
     rotate([0, 0, 45])
     translate([0, 0, -0.001])
@@ -223,14 +215,7 @@ module rollers() {
                         cylinder(h = plate_h, r = roller_r, $fn = 20);
                 }
             }
-            // d. Diagonal corners — lower-right and upper-right of belt entry
-            translate([b_R, plate_d/2 - belt_half, 0])
-            rotate([0, 0, 45])
-            hull() {
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([nub, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-            }
+            // d. Upper diagonal corner — upper-right of belt entry
             translate([b_R, plate_d/2 + belt_half, 0])
             rotate([0, 0, 45])
             hull() {

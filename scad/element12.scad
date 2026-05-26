@@ -36,6 +36,7 @@ arrow_h       = arrow_shaft_h + arrow_head_h;
 arrow_tip_y   = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;
 arrow_y       = arrow_tip_y - arrow_h;
 arrow_outline = 1/16;
+arrow_fill_w  = 2 * arrow_outline;
 
 cx         = plate_w / 2;
 r_curve    = 0.48;
@@ -45,7 +46,7 @@ y_entry    = y_arc_ctr + r_curve;
 cx_l       = cx - r_curve;
 cx_r       = cx + r_curve;
 r_outer    = r_curve + belt_half;
-h_straight = 0.24;
+h_straight = 0.49;
 
 module rivet_holes() {
     spacing_x = plate_w / 10;
@@ -143,15 +144,7 @@ module roller_slots() {
                 cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
         }
     }
-    // d. Diagonal corners — lower-right and upper-right of belt entry
-    translate([b_R, plate_d/2 - belt_half, 0])
-    rotate([0, 0, 45])
-    translate([0, 0, -0.001])
-    hull() {
-        cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-        translate([nub, 0, 0])
-            cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
-    }
+    // d. Upper diagonal corner — upper-right of belt entry
     translate([b_R, plate_d/2 + belt_half, 0])
     rotate([0, 0, 45])
     translate([0, 0, -0.001])
@@ -214,14 +207,7 @@ module rollers() {
                         cylinder(h = plate_h, r = roller_r, $fn = 20);
                 }
             }
-            // d. Diagonal corners — lower-right and upper-right of belt entry
-            translate([b_R, plate_d/2 - belt_half, 0])
-            rotate([0, 0, 45])
-            hull() {
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
-                translate([nub, 0, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
-            }
+            // d. Upper diagonal corner — upper-right of belt entry
             translate([b_R, plate_d/2 + belt_half, 0])
             rotate([0, 0, 45])
             hull() {
@@ -275,8 +261,8 @@ module arrow() {
         linear_extrude(plate_h)
         difference() {
             square([arrow_shaft_w, y_merge - (plate_d/2 + r_curve)]);
-            translate([arrow_outline, 0])
-                square([arrow_shaft_w - 2*arrow_outline, y_merge - (plate_d/2 + r_curve)]);
+            translate([arrow_fill_w, 0])
+                square([arrow_shaft_w - 2*arrow_fill_w, y_merge - (plate_d/2 + r_curve)]);
         }
         // Arc shaft: hollow annulus, lower-left quadrant (180°–270°)
         translate([cx_r, plate_d/2 + r_curve, 0])
@@ -287,7 +273,7 @@ module arrow() {
                     circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
                     circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                 }
-                offset(delta = -arrow_outline)
+                offset(delta = -arrow_fill_w)
                 difference() {
                     circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
                     circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
@@ -301,19 +287,19 @@ module arrow() {
         linear_extrude(plate_h)
         difference() {
             square([h_straight, arrow_shaft_w]);
-            translate([0, arrow_outline])
-                square([h_straight, arrow_shaft_w - 2*arrow_outline]);
+            translate([0, arrow_fill_w])
+                square([h_straight, arrow_shaft_w - 2*arrow_fill_w]);
         }
         // End cap
-        translate([cx_r + h_straight - arrow_outline, plate_d/2 - arrow_shaft_w/2, 0])
-            cube([arrow_outline, arrow_shaft_w, plate_h]);
+        translate([cx_r + h_straight - arrow_fill_w, plate_d/2 - arrow_shaft_w/2, 0])
+            cube([arrow_fill_w, arrow_shaft_w, plate_h]);
         // Arrowhead — clipped from full arrow_2d so base is open to shaft
         translate([cx, arrow_y, 0])
         linear_extrude(plate_h)
         intersection() {
             difference() {
                 arrow_2d();
-                offset(delta = -arrow_outline) arrow_2d();
+                offset(delta = -arrow_fill_w) arrow_2d();
             }
             translate([-arrow_w / 2, arrow_shaft_h])
                 square([arrow_w, arrow_head_h]);
@@ -349,8 +335,8 @@ module belt() {
         linear_extrude(plate_h + 0.002)
         difference() {
             square([arrow_shaft_w, y_merge - (plate_d/2 + r_curve) + 0.001]);
-            translate([arrow_outline, 0])
-                square([arrow_shaft_w - 2*arrow_outline, y_merge - (plate_d/2 + r_curve)]);
+            translate([arrow_fill_w, 0])
+                square([arrow_shaft_w - 2*arrow_fill_w, y_merge - (plate_d/2 + r_curve)]);
         }
         // Arc shaft cutout
         translate([cx_r, plate_d/2 + r_curve, -0.001])
@@ -361,7 +347,7 @@ module belt() {
                     circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
                     circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                 }
-                offset(delta = -arrow_outline)
+                offset(delta = -arrow_fill_w)
                 difference() {
                     circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
                     circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
@@ -375,19 +361,19 @@ module belt() {
         linear_extrude(plate_h + 0.002)
         difference() {
             square([h_straight, arrow_shaft_w]);
-            translate([0, arrow_outline])
-                square([h_straight, arrow_shaft_w - 2*arrow_outline]);
+            translate([0, arrow_fill_w])
+                square([h_straight, arrow_shaft_w - 2*arrow_fill_w]);
         }
         // End cap cutout
-        translate([cx_r + h_straight - arrow_outline, plate_d/2 - arrow_shaft_w/2, -0.001])
-            cube([arrow_outline, arrow_shaft_w, plate_h + 0.002]);
+        translate([cx_r + h_straight - arrow_fill_w, plate_d/2 - arrow_shaft_w/2, -0.001])
+            cube([arrow_fill_w, arrow_shaft_w, plate_h + 0.002]);
         // Arrowhead cutout — clipped from full arrow_2d so base is open to shaft
         translate([cx, arrow_y, -0.001])
         linear_extrude(plate_h + 0.002)
         intersection() {
             difference() {
                 arrow_2d();
-                offset(delta = -arrow_outline) arrow_2d();
+                offset(delta = -arrow_fill_w) arrow_2d();
             }
             translate([-arrow_w / 2, arrow_shaft_h])
                 square([arrow_w, arrow_head_h]);

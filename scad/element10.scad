@@ -36,6 +36,7 @@ arrow_h       = arrow_shaft_h + arrow_head_h;
 arrow_tip_y   = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;
 arrow_y       = arrow_tip_y - arrow_h;
 arrow_outline = 1/16;
+arrow_fill_w  = 2 * arrow_outline;
 
 module rivet_holes() {
     spacing_x = plate_w / 10;
@@ -151,7 +152,7 @@ module arrow() {
     linear_extrude(plate_h)
     difference() {
         arrow_2d();
-        offset(delta = -arrow_outline) arrow_2d();
+        offset(delta = -arrow_fill_w) arrow_2d();
     }
 }
 
@@ -164,7 +165,7 @@ module belt() {
         linear_extrude(plate_h + 0.002)
         difference() {
             arrow_2d();
-            offset(delta = -arrow_outline) arrow_2d();
+            offset(delta = -arrow_fill_w) arrow_2d();
         }
     }
 }
