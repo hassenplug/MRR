@@ -83,6 +83,25 @@ module plate() {
     difference() {
         cube([plate_w, plate_d, plate_h]);
         rivet_holes();
+        translate([lg_cx, lg_cy, -0.001])
+        linear_extrude(plate_h + 0.002)
+        difference() {
+            offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
+            gear_2d(lg_n, lg_r_tip, lg_r_root);
+        }
+        translate([lg_cx, lg_cy, -0.001])
+        linear_extrude(plate_h + 0.002)
+        difference() {
+            circle(r = lg_mid_r + lg_mid_w, $fn=120);
+            circle(r = lg_mid_r - lg_mid_w, $fn=120);
+        }
+        translate([sg_cx, sg_cy, -0.001])
+        rotate([0, 0, sg_phase])
+        linear_extrude(plate_h + 0.002)
+        difference() {
+            offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
+            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
+        }
     }
 }
 
@@ -161,7 +180,13 @@ module small_gear_hub() {
     color("darkgray")
     translate([sg_cx, sg_cy, 0])
     linear_extrude(plate_h + 0.002)
-    circle(r=sg_r_hub, $fn=40);
+    difference() {
+        circle(r=sg_r_hub, $fn=40);
+        difference() {
+            circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
+            circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
+        }
+    }
 }
 
 module small_gear_mid_ring() {
@@ -193,6 +218,10 @@ module large_gear() {
     difference() {
         gear_2d(lg_n, lg_r_tip, lg_r_root);
         circle(r=lg_r_bore, $fn=80);
+        difference() {
+            offset(delta = arr_outline) rotation_arrows_2d();
+            rotation_arrows_2d();
+        }
     }
 }
 
