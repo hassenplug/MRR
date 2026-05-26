@@ -41,7 +41,7 @@ arrow_shaft_w = arrow_w * 0.4;
 arrow_head_h  = arrow_w / 2;
 arrow_shaft_h = 0.25;
 arrow_h       = arrow_shaft_h + arrow_head_h;
-arrow_outline = 1/16;
+arrow_outline = 1/8;
 
 // Upward arrow: tip at same position as element20's top arrow tip
 arrow_tip_y  = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;

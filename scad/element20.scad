@@ -34,7 +34,7 @@ arrow_head_h  = arrow_w / 2;
 arrow_gap     = 1/8;
 arrow_h       = (plate_d * 3/4 - arrow_gap) / 2;
 arrow_shaft_h = arrow_h - arrow_head_h;
-arrow_outline = 1/16;
+arrow_outline = 1/8;
 
 arrow_tip_y   = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;
 arrow2_y      = arrow_tip_y - arrow_h;
