@@ -43,7 +43,7 @@ BELT_W_IN    = 1.75
 # ── Arrow  (element10.scad) ───────────────────────────────────────────────────
 ARROW_W_IN       = BELT_W_IN * 0.75     # 1.3125"  full arrow width
 _ARROW_TIP_IN    = 3 * PLATE_W_IN / 20 + 1/4 + 7 * PLATE_W_IN / 10  # tip from plate bottom (fixed)
-ARROW_OUT_IN     = 1/16                  # 0.0625"  outline thickness
+ARROW_OUT_IN     = 1/8                   # 0.125"   outline thickness
 
 ARROW_HEAD_H_IN  = ARROW_W_IN / 2        # 0.65625"
 ARROW_SHAFT_W_IN = ARROW_W_IN * 0.4      # 0.525"

@@ -102,6 +102,22 @@ module plate() {
             offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
             gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
         }
+        translate([lg_cx, lg_cy, -0.001])
+        linear_extrude(plate_h + 0.002)
+        difference() {
+            gear_2d(lg_n, lg_r_tip, lg_r_root);
+            circle(r=lg_r_bore, $fn=80);
+        }
+        translate([sg_cx, sg_cy, -0.001])
+        rotate([0, 0, sg_phase])
+        linear_extrude(plate_h + 0.002)
+        difference() {
+            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
+            circle(r=sg_r_hub, $fn=40);
+        }
+        translate([sg_cx, sg_cy, -0.001])
+        linear_extrude(plate_h + 0.002)
+        circle(r=sg_r_hub, $fn=40);
     }
 }
 
@@ -153,7 +169,7 @@ module small_gear() {
     difference() {
         translate([sg_cx, sg_cy, 0])
         rotate([0, 0, sg_phase])
-        linear_extrude(plate_h + 0.001)
+        linear_extrude(plate_h)
         difference() {
             gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
             circle(r=sg_r_hub, $fn=40);
@@ -167,7 +183,7 @@ module small_gear_outline() {
     difference() {
         translate([sg_cx, sg_cy, 0])
         rotate([0, 0, sg_phase])
-        linear_extrude(plate_h + 0.001)
+        linear_extrude(plate_h)
         difference() {
             offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
             gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
@@ -179,7 +195,7 @@ module small_gear_outline() {
 module small_gear_hub() {
     color("darkgray")
     translate([sg_cx, sg_cy, 0])
-    linear_extrude(plate_h + 0.002)
+    linear_extrude(plate_h)
     difference() {
         circle(r=sg_r_hub, $fn=40);
         difference() {
@@ -192,7 +208,7 @@ module small_gear_hub() {
 module small_gear_mid_ring() {
     color("black")
     translate([sg_cx, sg_cy, 0])
-    linear_extrude(plate_h + 0.003)
+    linear_extrude(plate_h)
     difference() {
         circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
         circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
@@ -204,7 +220,7 @@ module small_gear_mid_ring() {
 module large_gear_outline() {
     color("black")
     translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.001)
+    linear_extrude(plate_h)
     difference() {
         offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
         gear_2d(lg_n, lg_r_tip, lg_r_root);
@@ -214,21 +230,18 @@ module large_gear_outline() {
 module large_gear() {
     color([0.15, 0.78, 0.15])
     translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.001)
+    linear_extrude(plate_h)
     difference() {
         gear_2d(lg_n, lg_r_tip, lg_r_root);
         circle(r=lg_r_bore, $fn=80);
-        difference() {
-            offset(delta = arr_outline) rotation_arrows_2d();
-            rotation_arrows_2d();
-        }
+        offset(delta = arr_outline) rotation_arrows_2d();
     }
 }
 
 module large_gear_mid_ring() {
     color("black")
     translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.002)
+    linear_extrude(plate_h)
     difference() {
         circle(r = lg_mid_r + lg_mid_w, $fn=120);
         circle(r = lg_mid_r - lg_mid_w, $fn=120);
@@ -267,7 +280,7 @@ module rotation_arrows_2d() {
 module rotation_arrows_outline() {
     color("black")
     translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.004)
+    linear_extrude(plate_h)
     difference() {
         offset(delta = arr_outline) rotation_arrows_2d();
         rotation_arrows_2d();
@@ -277,7 +290,7 @@ module rotation_arrows_outline() {
 module rotation_arrows() {
     color([0.74, 0.74, 0.78])
     translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h + 0.003)
+    linear_extrude(plate_h)
     rotation_arrows_2d();
 }
 
