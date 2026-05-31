@@ -46,7 +46,7 @@ y_entry    = y_arc_ctr + r_curve;
 cx_l       = cx - r_curve;
 cx_r       = cx + r_curve;
 r_outer    = r_curve + belt_half;
-h_straight = 0.24;
+h_straight = 0.49;
 
 module rivet_holes() {
     spacing_x = plate_w / 10;
@@ -68,13 +68,29 @@ module rivet_holes() {
     }
 }
 
-module frame() {
+module frame_with_id(colors = []) {
+    id_cover = plate_h / 8;
+    region_w = (plate_w + 2 * frame_w) / 6;
+    mark_h   = plate_h - id_cover;
+
     color("black")
     difference() {
         translate([-frame_w, -frame_w, 0])
             cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
         translate([0, 0, -0.001])
             cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, plate_d, -0.001])
+            cube([plate_w + 2 * frame_w, frame_w + 0.002, plate_h + 0.002]);
+    }
+
+    for (i = [0:5]) {
+        c = (colors[i] != undef) ? colors[i] : "black";
+        color(c)
+        translate([-frame_w + i * region_w, plate_d, 0])
+            cube([region_w, frame_w, mark_h]);
+        color("black")
+        translate([-frame_w + i * region_w, plate_d, mark_h])
+            cube([region_w, frame_w, id_cover]);
     }
 }
 
@@ -382,7 +398,7 @@ module belt() {
     }
 }
 
-frame();
+frame_with_id([undef, undef, "green", "green", "green", "green"]);
 plate();
 rivets();
 rollers();

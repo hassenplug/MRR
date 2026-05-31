@@ -76,13 +76,29 @@ module rivet_holes() {
     }
 }
 
-module frame() {
+module frame_with_id(colors = []) {
+    id_cover = plate_h / 8;
+    region_w = (plate_w + 2 * frame_w) / 6;
+    mark_h   = plate_h - id_cover;
+
     color("black")
     difference() {
         translate([-frame_w, -frame_w, 0])
             cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
         translate([0, 0, -0.001])
             cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, plate_d, -0.001])
+            cube([plate_w + 2 * frame_w, frame_w + 0.002, plate_h + 0.002]);
+    }
+
+    for (i = [0:5]) {
+        c = (colors[i] != undef) ? colors[i] : "black";
+        color(c)
+        translate([-frame_w + i * region_w, plate_d, 0])
+            cube([region_w, frame_w, mark_h]);
+        color("black")
+        translate([-frame_w + i * region_w, plate_d, mark_h])
+            cube([region_w, frame_w, id_cover]);
     }
 }
 
@@ -274,35 +290,23 @@ module arrows() {
                 translate([arrow_outline, 0])
                     square([arrow_shaft_w - 2*arrow_outline, y_merge_up - (plate_d/2 + r_curve)]);
             }
-            // Arc shaft: outer line 180°–265°, inner line 180°–260°
+            // Arc shaft: hollow annulus, lower-left quadrant (180°–270°)
             translate([cx_r, plate_d/2 + r_curve, 0])
             linear_extrude(plate_h)
-            union() {
-                // Outer arc line: 180° to 265°
-                intersection() {
+            intersection() {
+                difference() {
                     difference() {
                         circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
-                        circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
-                    }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:265]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
-                }
-                // Inner arc line: 180° to 260°
-                intersection() {
-                    difference() {
-                        circle(r = r_curve - arrow_shaft_w/2 + arrow_outline, $fn = 120);
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:260]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                    offset(delta = -arrow_outline)
+                    difference() {
+                        circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
+                        circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
+                    }
                 }
-                // Round end caps
-                for (p = [
-                    [-(r_curve + arrow_shaft_w/2 - arrow_outline/2), 0],
-                    [-(r_curve - arrow_shaft_w/2 + arrow_outline/2), 0],
-                    [(r_curve + arrow_shaft_w/2 - arrow_outline/2) * cos(265), (r_curve + arrow_shaft_w/2 - arrow_outline/2) * sin(265)],
-                    [(r_curve - arrow_shaft_w/2 + arrow_outline/2) * cos(260), (r_curve - arrow_shaft_w/2 + arrow_outline/2) * sin(260)]
-                ]) translate(p) circle(r = arrow_outline/2, $fn = 20);
+                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
+                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
             }
             // Horizontal segment: from arc 270° endpoint going right
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
@@ -383,32 +387,20 @@ module belt() {
             // Arc shaft cutout
             translate([cx_r, plate_d/2 + r_curve, -0.001])
             linear_extrude(plate_h + 0.002)
-            union() {
-                // Outer arc line: 180° to 265°
-                intersection() {
+            intersection() {
+                difference() {
                     difference() {
                         circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
-                        circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
-                    }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:265]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
-                }
-                // Inner arc line: 180° to 260°
-                intersection() {
-                    difference() {
-                        circle(r = r_curve - arrow_shaft_w/2 + arrow_outline, $fn = 120);
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:260]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                    offset(delta = -arrow_outline)
+                    difference() {
+                        circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
+                        circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
+                    }
                 }
-                // Round end caps
-                for (p = [
-                    [-(r_curve + arrow_shaft_w/2 - arrow_outline/2), 0],
-                    [-(r_curve - arrow_shaft_w/2 + arrow_outline/2), 0],
-                    [(r_curve + arrow_shaft_w/2 - arrow_outline/2) * cos(265), (r_curve + arrow_shaft_w/2 - arrow_outline/2) * sin(265)],
-                    [(r_curve - arrow_shaft_w/2 + arrow_outline/2) * cos(260), (r_curve - arrow_shaft_w/2 + arrow_outline/2) * sin(260)]
-                ]) translate(p) circle(r = arrow_outline/2, $fn = 20);
+                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
+                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
             }
             // Horizontal segment cutout
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])
@@ -454,7 +446,7 @@ module belt() {
     }
 }
 
-frame();
+frame_with_id([undef, undef, "blue", "blue", "blue", "blue"]);
 plate();
 rivets();
 rollers();

@@ -40,21 +40,21 @@
 | Element80 | Fire / Explosion | ![Element80](../Images/Later/Element80.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
 | Element92 | Tool Kit | ![Element92](../Images/Element92.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 5 |   |
 | Element100 | Flag Square (need numbers) | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
-| Element100-1 | Flag Square #1 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
-| Element100-2 | Flag Square #2 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
-| Element100-3 | Flag Square #3 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
-| Element100-4 | Flag Square #4 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
-| Element100-5 | Flag Square #5 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
-| Element100-6 | Flag Square #6 | ![Element100](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-1 | Flag Square #1 | ![Element100-1](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-2 | Flag Square #2 | ![Element100-2](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-3 | Flag Square #3 | ![Element100-3](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-4 | Flag Square #4 | ![Element100-4](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-5 | Flag Square #5 | ![Element100-5](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
+| Element100-6 | Flag Square #6 | ![Element100-6](../Images/Element100.jpg) | ![Element0](../Images/Element0.jpg) | 1 |   | 1 |
 | Element110 | Start Square (need numbers) | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
-| Element110-1 | Start Square #1 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-2 | Start Square #2 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-3 | Start Square #3 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-4 | Start Square #4 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-5 | Start Square #5 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-6 | Start Square #6 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-7 | Start Square #7 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
-| Element110-8 | Start Square #8 | ![Element110](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-1 | Start Square #1 | ![Element110-1](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-2 | Start Square #2 | ![Element110-2](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-3 | Start Square #3 | ![Element110-3](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-4 | Start Square #4 | ![Element110-4](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-5 | Start Square #5 | ![Element110-5](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-6 | Start Square #6 | ![Element110-6](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-7 | Start Square #7 | ![Element110-7](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
+| Element110-8 | Start Square #8 | ![Element110-8](../Images/Element110.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 1 | 1 |
 | Element120 | Reboot Square | ![Element120](../Images/Element120.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 4 |   |
 | Element200 | Raised Wall | ![Element200](../Images/Element200.jpg) |   | 0 | 16 |   |
 | Element201 | Two-Zone Hazard Tile | ![Element201](../Images/Later/Element201.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |

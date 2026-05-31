@@ -10,6 +10,7 @@ Usage:
 
 """
 
+import argparse
 import re
 import subprocess
 import sys
@@ -30,6 +31,11 @@ def parse_element_id(cell):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--quiet", "-q", action="store_true",
+                        help="Suppress per-color rendering output")
+    args = parser.parse_args()
+
     OUT_DIR.mkdir(exist_ok=True)
 
     lines = MD_FILE.read_text(encoding="utf-8").splitlines()
@@ -77,7 +83,7 @@ def main():
         if len(cells) <= max(elem_col, image_col, back_col, need_col):
             continue
 
-        need_str = cells[need_col].strip()
+        need_str = "1" #cells[need_col].strip()
         try:
             need = int(need_str)
         except ValueError:
@@ -91,7 +97,8 @@ def main():
         top_id    = parse_element_id(cells[back_col])   # Back= column = top layer
         out_name  = cells[elem_col].lower()             # Element column = output file name
 
-        if not top_id or not bottom_id or not out_name:
+       # if not top_id or not bottom_id or not out_name:
+        if not bottom_id or not out_name:
             print(f"Skipping row (could not parse element IDs): {line.strip()}")
             skipped_missing += 1
             continue
@@ -109,24 +116,27 @@ def main():
             skipped_missing += 1
             continue
         if out_3mf.exists():
-            print(f"Skipping {out_name}: {out_3mf.relative_to(BASE)} already exists")
+            if not args.quiet:
+                print(f"Skipping {out_name}: {out_3mf.relative_to(BASE)} already exists")
             skipped_exists += 1
             continue
 
-        print(f"\n{'='*60}")
-        print(f"Building {out_name}  (need={need})")
-        print(f"  Top:    {top_scad.relative_to(BASE)}")
-        print(f"  Bottom: {bottom_scad.relative_to(BASE)}")
-        print(f"  Output: {out_3mf.relative_to(BASE)}")
-        print(f"{'='*60}")
+        #print(f"\n{'='*60}")
+        #print(f"Building {out_name}  (need={need})")
+        #print(f"  Top:    {top_scad.relative_to(BASE)}")
+        #print(f"  Bottom: {bottom_scad.relative_to(BASE)}")
+        #print(f"  Output: {out_3mf.relative_to(BASE)}")
+        #print(f"{'='*60}")
 
-        result = subprocess.run(
-            [sys.executable, "scad_to_3mf.py",
-             str(top_scad.relative_to(BASE)),
-             str(bottom_scad.relative_to(BASE)),
-             str(out_3mf.relative_to(BASE))],
-            cwd=str(BASE)
-        )
+        print(f"Building {out_name}  {top_scad.relative_to(BASE)} + {bottom_scad.relative_to(BASE)} -> {out_3mf.relative_to(BASE)}")
+
+        cmd = [sys.executable, "scad_to_3mf.py",
+               str(top_scad.relative_to(BASE)),
+               str(bottom_scad.relative_to(BASE)),
+               str(out_3mf.relative_to(BASE))]
+        if args.quiet:
+            cmd.append("--quiet")
+        result = subprocess.run(cmd, cwd=str(BASE))
         if result.returncode != 0:
             print(f"  FAILED (exit {result.returncode})")
         else:

@@ -30,7 +30,7 @@ nub = roller_x_hi - b_R;
 
 arrow_w       = belt_w * 0.75;
 arrow_shaft_w = arrow_w * 0.4;
-arrow_shaft_h = 1.5;
+arrow_shaft_h = 1.676;
 arrow_head_h  = arrow_w / 2;
 arrow_h       = arrow_shaft_h + arrow_head_h;
 arrow_tip_y   = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;
@@ -58,13 +58,29 @@ module rivet_holes() {
     }
 }
 
-module frame() {
+module frame_with_id(colors = []) {
+    id_cover = plate_h / 8;
+    region_w = (plate_w + 2 * frame_w) / 6;
+    mark_h   = plate_h - id_cover;
+
     color("black")
     difference() {
         translate([-frame_w, -frame_w, 0])
             cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
         translate([0, 0, -0.001])
             cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, plate_d, -0.001])
+            cube([plate_w + 2 * frame_w, frame_w + 0.002, plate_h + 0.002]);
+    }
+
+    for (i = [0:5]) {
+        c = (colors[i] != undef) ? colors[i] : "black";
+        color(c)
+        translate([-frame_w + i * region_w, plate_d, 0])
+            cube([region_w, frame_w, mark_h]);
+        color("black")
+        translate([-frame_w + i * region_w, plate_d, mark_h])
+            cube([region_w, frame_w, id_cover]);
     }
 }
 
@@ -170,7 +186,7 @@ module belt() {
     }
 }
 
-frame();
+frame_with_id([undef, undef, "green", "green", undef, undef]);
 plate();
 rivets();
 rollers();

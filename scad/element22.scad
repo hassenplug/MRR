@@ -285,7 +285,7 @@ module arrows() {
                         circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
                     }
                     polygon(concat([[0,0]],
-                        [for (a = [180:1:265]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                        [for (a = [180:1:270]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
                 }
                 // Inner arc line: 180° to 260°
                 intersection() {
@@ -294,15 +294,8 @@ module arrows() {
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
                     polygon(concat([[0,0]],
-                        [for (a = [180:1:260]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                        [for (a = [180:1:270]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
                 }
-                // Round end caps
-                for (p = [
-                    [-(r_curve + arrow_shaft_w/2 - arrow_outline/2), 0],
-                    [-(r_curve - arrow_shaft_w/2 + arrow_outline/2), 0],
-                    [(r_curve + arrow_shaft_w/2 - arrow_outline/2) * cos(265), (r_curve + arrow_shaft_w/2 - arrow_outline/2) * sin(265)],
-                    [(r_curve - arrow_shaft_w/2 + arrow_outline/2) * cos(260), (r_curve - arrow_shaft_w/2 + arrow_outline/2) * sin(260)]
-                ]) translate(p) circle(r = arrow_outline/2, $fn = 20);
             }
             // Horizontal segment: from arc 270° endpoint going right
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
@@ -391,7 +384,7 @@ module belt() {
                         circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
                     }
                     polygon(concat([[0,0]],
-                        [for (a = [180:1:265]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                        [for (a = [180:1:270]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
                 }
                 // Inner arc line: 180° to 260°
                 intersection() {
@@ -400,15 +393,8 @@ module belt() {
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
                     polygon(concat([[0,0]],
-                        [for (a = [180:1:260]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                        [for (a = [180:1:270]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
                 }
-                // Round end caps
-                for (p = [
-                    [-(r_curve + arrow_shaft_w/2 - arrow_outline/2), 0],
-                    [-(r_curve - arrow_shaft_w/2 + arrow_outline/2), 0],
-                    [(r_curve + arrow_shaft_w/2 - arrow_outline/2) * cos(265), (r_curve + arrow_shaft_w/2 - arrow_outline/2) * sin(265)],
-                    [(r_curve - arrow_shaft_w/2 + arrow_outline/2) * cos(260), (r_curve - arrow_shaft_w/2 + arrow_outline/2) * sin(260)]
-                ]) translate(p) circle(r = arrow_outline/2, $fn = 20);
             }
             // Horizontal segment cutout
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])

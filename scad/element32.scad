@@ -70,11 +70,29 @@ module rivet_holes() {
     for (i = [0:9]) translate([plate_w-inset_x, inset_y + i*spacing_y,   -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
 }
 
-module frame() {
+module frame_with_id(colors = []) {
+    id_cover = plate_h / 8;
+    region_w = (plate_w + 2 * frame_w) / 6;
+    mark_h   = plate_h - id_cover;
+
     color("black")
     difference() {
-        translate([-frame_w, -frame_w, 0]) cube([plate_w+2*frame_w, plate_d+2*frame_w, plate_h]);
-        translate([0, 0, -0.001])          cube([plate_w, plate_d, plate_h+0.002]);
+        translate([-frame_w, -frame_w, 0])
+            cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
+        translate([0, 0, -0.001])
+            cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, plate_d, -0.001])
+            cube([plate_w + 2 * frame_w, frame_w + 0.002, plate_h + 0.002]);
+    }
+
+    for (i = [0:5]) {
+        c = (colors[i] != undef) ? colors[i] : "black";
+        color(c)
+        translate([-frame_w + i * region_w, plate_d, 0])
+            cube([region_w, frame_w, mark_h]);
+        color("black")
+        translate([-frame_w + i * region_w, plate_d, mark_h])
+            cube([region_w, frame_w, id_cover]);
     }
 }
 
@@ -165,7 +183,7 @@ module lg_silhouette_cut() {
 // ── Small gear ────────────────────────────────────────────────────────────────
 
 module small_gear() {
-    color([0.85, 0.10, 0.10])
+    color("red")
     difference() {
         translate([sg_cx, sg_cy, 0])
         rotate([0, 0, sg_phase])
@@ -228,7 +246,7 @@ module large_gear_outline() {
 }
 
 module large_gear() {
-    color([0.85, 0.10, 0.10])
+    color("red")
     translate([lg_cx, lg_cy, 0])
     linear_extrude(plate_h)
     difference() {
@@ -288,7 +306,7 @@ module rotation_arrows_outline() {
 }
 
 module rotation_arrows() {
-    color([0.74, 0.74, 0.78])
+    color("lightgray")
     translate([lg_cx, lg_cy, 0])
     linear_extrude(plate_h)
     rotation_arrows_2d();
@@ -296,7 +314,7 @@ module rotation_arrows() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-frame();
+frame_with_id(["red", undef, undef, undef, undef, "red"]);
 plate();
 rivets();
 small_gear();

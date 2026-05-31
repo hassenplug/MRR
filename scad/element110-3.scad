@@ -26,16 +26,34 @@ module rivet_holes() {
     inset_x   = spacing_x / 2;
     inset_y   = spacing_y / 2;
     for (i = [0:9]) translate([inset_x + i * spacing_x, inset_y,           -1]) cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-    for (i = [0:9]) translate([inset_x + i * spacing_x, plate_d - inset_y, -1]) cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-    for (i = [0:9]) translate([inset_x,           inset_y + i * spacing_y, -1]) cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-    for (i = [0:9]) translate([plate_w - inset_x, inset_y + i * spacing_y, -1]) cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
+    for (i = [0:9]) translate([inset_x + i * spacing_x, plate_d - inset_y, -0.001]) cylinder(h = plate_h + 0.002, r = hole_r, $fn = 20);
+    for (i = [0:9]) translate([inset_x,           inset_y + i * spacing_y, -0.001]) cylinder(h = plate_h + 0.002, r = hole_r, $fn = 20);
+    for (i = [0:9]) translate([plate_w - inset_x, inset_y + i * spacing_y, -0.001]) cylinder(h = plate_h + 0.002, r = hole_r, $fn = 20);
 }
 
-module frame() {
+module frame_with_id(colors = []) {
+    id_cover = plate_h / 8;
+    region_w = (plate_w + 2 * frame_w) / 6;
+    mark_h   = plate_h - id_cover;
+
     color("black")
     difference() {
-        translate([-frame_w, -frame_w, 0]) cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
-        translate([0, 0, -0.001])          cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, -frame_w, 0])
+            cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
+        translate([0, 0, -0.001])
+            cube([plate_w, plate_d, plate_h + 0.002]);
+        translate([-frame_w, plate_d, -0.001])
+            cube([plate_w + 2 * frame_w, frame_w + 0.002, plate_h + 0.002]);
+    }
+
+    for (i = [0:5]) {
+        c = (colors[i] != undef) ? colors[i] : "black";
+        color(c)
+        translate([-frame_w + i * region_w, plate_d, 0])
+            cube([region_w, frame_w, mark_h]);
+        color("black")
+        translate([-frame_w + i * region_w, plate_d, mark_h])
+            cube([region_w, frame_w, id_cover]);
     }
 }
 
@@ -80,8 +98,8 @@ module gear_2d() {
 // ── Gear holes & gear ────────────────────────────────────────────────────────
 
 module gear_holes() {
-    translate([plate_w / 2, plate_d / 2, -1])
-    linear_extrude(plate_h + 2)
+    translate([plate_w / 2, plate_d / 2, -0.001])
+    linear_extrude(plate_h + 0.002)
     difference() {
         gear_2d();
         circle(r = gear_r_bore, $fn = 80);
@@ -98,8 +116,8 @@ module gear() {
 // ── Gear bore hole & gear bore ────────────────────────────────────────────────
 
 module gear_bore_holes() {
-    translate([plate_w / 2, plate_d / 2, -1])
-    linear_extrude(plate_h + 2)
+    translate([plate_w / 2, plate_d / 2, -0.001])
+    linear_extrude(plate_h + 0.002)
     circle(r = gear_r_bore, $fn = 80);
 }
 
@@ -113,8 +131,8 @@ module gear_bore() {
 // ── Label hole → label ────────────────────────────────────────────────────────
 
 module label_holes() {
-    translate([plate_w / 2, plate_d / 2, -1])
-    linear_extrude(plate_h + 2)
+    translate([plate_w / 2, plate_d / 2, -0.001])
+    linear_extrude(plate_h + 0.002)
     text("3", size = 1.1, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
@@ -132,7 +150,7 @@ module label() {
 //             union() then adds the feature that fills those holes.
 // Innermost = first step; outermost = last step.
 
-frame();
+frame_with_id(["green", "green", undef, "green", "green", "green"]);
 
 union() {                                           // step 5: add label
     difference() {

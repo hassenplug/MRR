@@ -23,6 +23,12 @@ import sys
 from pathlib import Path
 
 OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
+QUIET = False
+
+
+def vprint(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
 
 
 def find_colors(scad_path):
@@ -109,7 +115,7 @@ def flip_bottom(parts):
     my = max(v[1] for _, triangles in parts for tri in triangles for v in tri) + min(v[1] for _, triangles in parts for tri in triangles for v in tri)
     mz = max(v[2] for _, triangles in parts for tri in triangles for v in tri) + min(v[2] for _, triangles in parts for tri in triangles for v in tri)
 
-    print(f"Input:  {mx:.6f} x {my:.6f} x {mz:.6f}")
+    vprint(f"Input:  {mx:.6f} x {my:.6f} x {mz:.6f}")
     for name, triangles in parts:
         flipped = []
         for v0, v1, v2 in triangles:
@@ -276,7 +282,7 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
     top_z = 0.0
     for label, expr in colors:
         stl_path = Path(tmpdir) / f"{prefix}_{label}.stl"
-        print(f"  Rendering '{label}' ...", end=" ", flush=True)
+        vprint(f"  Rendering '{label}' ...", end=" ", flush=True)
         scad_src = make_filter_scad(str(scad_path), expr)
         ok = export_stl(scad_src, stl_path)
         if not ok or not stl_path.exists():
@@ -291,12 +297,17 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
         z = max_axis(triangles, axis=2)
         if z > top_z:
             top_z = z
-        print(f"{len(triangles):,} triangles")
+        vprint(f"{len(triangles):,} triangles")
         parts.append((f"{prefix}_{label}", triangles))
     return parts, top_z
 
 
 def main():
+    global QUIET
+    if "--quiet" in sys.argv:
+        QUIET = True
+        sys.argv = [a for a in sys.argv if a != "--quiet"]
+
     two_file_mode = len(sys.argv) == 4
 
     if len(sys.argv) < 2 or len(sys.argv) > 4:
@@ -309,28 +320,28 @@ def main():
         top_path    = Path(sys.argv[1]).resolve()
         bottom_path = Path(sys.argv[2]).resolve()
         out_path    = Path(sys.argv[3])
-        print(f"Top:    {top_path}")
-        print(f"Bottom: {bottom_path}")
-        print(f"Output: {out_path}\n")
+        vprint(f"Top:    {top_path}")
+        vprint(f"Bottom: {bottom_path}")
+        vprint(f"Output: {out_path}\n")
     else:
         scad_path = Path(sys.argv[1]).resolve()
         out_path  = Path(sys.argv[2]) if len(sys.argv) > 2 else scad_path.with_suffix(".3mf")
-        print(f"Input:  {scad_path}")
-        print(f"Output: {out_path}\n")
+        vprint(f"Input:  {scad_path}")
+        vprint(f"Output: {out_path}\n")
 
     parts = []
     with tempfile.TemporaryDirectory() as tmpdir:
         if two_file_mode:
-            print("--- Bottom (flipped to face down) ---")
+            vprint("--- Bottom (flipped to face down) ---")
             bottom_parts, bottom_height = render_colors(bottom_path, tmpdir, "bottom")
             parts.extend(flip_bottom(bottom_parts))
-            print(f"\nBottom height: {bottom_height:.6f} — top will be raised by this amount\n")
+            vprint(f"\nBottom height: {bottom_height:.6f} — top will be raised by this amount\n")
 
-            print("--- Top ---")
+            vprint("--- Top ---")
             top_parts, _ = render_colors(top_path, tmpdir, "top", z_offset=bottom_height)
             parts.extend(top_parts)
         else:
-            print("--- Rendering ---")
+            vprint("--- Rendering ---")
             file_parts, _ = render_colors(scad_path, tmpdir, "")
             # strip the leading underscore from the prefix-less labels
             parts.extend((name.lstrip("_"), tris) for name, tris in file_parts)
@@ -339,13 +350,13 @@ def main():
         print("No geometry produced. Check your SCAD file.")
         sys.exit(1)
 
-    print(f"\nBuilding 3MF with {len(parts)} part(s) ...")
+    vprint(f"\nBuilding 3MF with {len(parts)} part(s) ...")
     build_3mf(parts, out_path)
     size_kb = out_path.stat().st_size / 1024
     print(f"Done: {out_path}  ({size_kb:.1f} KB)")
-    print()
-    print("In Bambu Studio: File > Open > select the .3mf")
-    print(f"Each part will be on its own filament slot (1={parts[0][0]}, etc.)")
+    vprint()
+    vprint("In Bambu Studio: File > Open > select the .3mf")
+    vprint(f"Each part will be on its own filament slot (1={parts[0][0]}, etc.)")
 
 
 if __name__ == "__main__":
