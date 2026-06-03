@@ -118,7 +118,7 @@ module plate() {
     }
 }
 
-frame_with_id(["lightgray", "lightgray", undef, undef, "lightgray", "lightgray"]);
+frame_with_id(["lightgray", undef, undef, undef, undef, "lightgray"]);
 plate();
 rivets();
 

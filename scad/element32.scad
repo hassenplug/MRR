@@ -314,7 +314,7 @@ module rotation_arrows() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-frame_with_id(["red", undef, undef, undef, undef, "red"]);
+frame_with_id([undef, "red", undef, undef, "red", undef]);
 plate();
 rivets();
 small_gear();

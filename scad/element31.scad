@@ -59,15 +59,16 @@ arr_arrow_gap   = 360 / 4 - arr_arrow_span; // gap between arrows (20°)
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-module rivet_holes() {
+module rivet_grid(z=0) {
     spacing_x = plate_w / 10;
     spacing_y = plate_d / 10;
     inset_x   = spacing_x / 2;
     inset_y   = spacing_y / 2;
-    for (i = [0:9]) translate([inset_x + i*spacing_x, inset_y,           -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([inset_x + i*spacing_x, plate_d-inset_y,   -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([inset_x,           inset_y + i*spacing_y, -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([plate_w-inset_x, inset_y + i*spacing_y,   -1]) cylinder(h=plate_h+2, r=hole_r, $fn=20);
+    h = plate_h - 2 * z;
+    for (i = [0:9]) translate([inset_x + i*spacing_x, inset_y,           z]) cylinder(h=h, r=hole_r, $fn=20);
+    for (i = [0:9]) translate([inset_x + i*spacing_x, plate_d-inset_y,   z]) cylinder(h=h, r=hole_r, $fn=20);
+    for (i = [0:9]) translate([inset_x,           inset_y + i*spacing_y, z]) cylinder(h=h, r=hole_r, $fn=20);
+    for (i = [0:9]) translate([plate_w-inset_x, inset_y + i*spacing_y,   z]) cylinder(h=h, r=hole_r, $fn=20);
 }
 
 module frame_with_id(colors = []) {
@@ -97,58 +98,18 @@ module frame_with_id(colors = []) {
 }
 
 module plate() {
-    color("darkgray")
-    difference() {
-        cube([plate_w, plate_d, plate_h]);
-        rivet_holes();
-        translate([lg_cx, lg_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
+    union() {
+        color("darkgray")
         difference() {
-            offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
-            gear_2d(lg_n, lg_r_tip, lg_r_root);
+            cube([plate_w, plate_d, plate_h]);
+            rivet_grid(-1);
+            //small_gear_outline(-1);
+            //large_gear_hub(-1);
+            //large_gear_outline(-1);
         }
-        translate([lg_cx, lg_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
-        difference() {
-            circle(r = lg_mid_r + lg_mid_w, $fn=120);
-            circle(r = lg_mid_r - lg_mid_w, $fn=120);
-        }
-        translate([sg_cx, sg_cy, -0.001])
-        rotate([0, 0, sg_phase])
-        linear_extrude(plate_h + 0.002)
-        difference() {
-            offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-        }
-        translate([lg_cx, lg_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
-        difference() {
-            gear_2d(lg_n, lg_r_tip, lg_r_root);
-            circle(r=lg_r_bore, $fn=80);
-        }
-        translate([sg_cx, sg_cy, -0.001])
-        rotate([0, 0, sg_phase])
-        linear_extrude(plate_h + 0.002)
-        difference() {
-            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-            circle(r=sg_r_hub, $fn=40);
-        }
-        translate([sg_cx, sg_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
-        circle(r=sg_r_hub, $fn=40);
-    }
-}
-
-module rivets() {
-    spacing_x = plate_w / 10;
-    spacing_y = plate_d / 10;
-    inset_x   = spacing_x / 2;
-    inset_y   = spacing_y / 2;
-    color("lightgray") {
-        for (i = [0:9]) translate([inset_x + i*spacing_x, inset_y,           0]) cylinder(h=plate_h, r=hole_r, $fn=20);
-        for (i = [0:9]) translate([inset_x + i*spacing_x, plate_d-inset_y,   0]) cylinder(h=plate_h, r=hole_r, $fn=20);
-        for (i = [0:9]) translate([inset_x,           inset_y + i*spacing_y, 0]) cylinder(h=plate_h, r=hole_r, $fn=20);
-        for (i = [0:9]) translate([plate_w-inset_x, inset_y + i*spacing_y,   0]) cylinder(h=plate_h, r=hole_r, $fn=20);
+        color("lightgray") rivet_grid(0);
+        //color("black") small_gear_outline(0);
+        //color("black")  large_gear_hub(0);
     }
 }
 
@@ -173,96 +134,65 @@ module gear_2d(n, r_t, r_r, tw_factor = 1.0, round_r = 0) {
     }
 }
 
-// 3D mask for cutting holes in sg layers at the lg meshing footprint
-module lg_silhouette_cut() {
-    translate([lg_cx, lg_cy, -0.001])
-    linear_extrude(plate_h + 0.002)
-    offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
-}
 
 // ── Small gear ────────────────────────────────────────────────────────────────
 
-module small_gear() {
+module small_gear_outline(z = 0) {
+    color("black")
+    translate([sg_cx, sg_cy, z])
+    rotate([0, 0, sg_phase])
+    linear_extrude(plate_h - 2 * z)
+    offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
+}
+
+module small_gear(z = 0) {
     color("green")
-    difference() {
-        translate([sg_cx, sg_cy, 0])
-        rotate([0, 0, sg_phase])
-        linear_extrude(plate_h)
-        difference() {
-            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-            circle(r=sg_r_hub, $fn=40);
-        }
-        lg_silhouette_cut();
-    }
+    translate([sg_cx, sg_cy, z])
+    rotate([0, 0, sg_phase])
+    linear_extrude(plate_h - 2 * z)
+    gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
 }
 
-module small_gear_outline() {
+module small_gear_mid_ring(z = 0) {
     color("black")
-    difference() {
-        translate([sg_cx, sg_cy, 0])
-        rotate([0, 0, sg_phase])
-        linear_extrude(plate_h)
-        difference() {
-            offset(delta = sg_outline) gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-            gear_2d(sg_n, sg_r_tip, sg_r_root, sg_tw_scale, sg_round_r);
-        }
-        lg_silhouette_cut();
-    }
-}
-
-module small_gear_hub() {
-    color("darkgray")
-    translate([sg_cx, sg_cy, 0])
-    linear_extrude(plate_h)
-    difference() {
-        circle(r=sg_r_hub, $fn=40);
-        difference() {
-            circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
-            circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
-        }
-    }
-}
-
-module small_gear_mid_ring() {
-    color("black")
-    translate([sg_cx, sg_cy, 0])
-    linear_extrude(plate_h)
+    translate([sg_cx, sg_cy, z])
+    linear_extrude(plate_h - 2 * z)
     difference() {
         circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
         circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
     }
 }
 
+module small_gear_hub(z = 0) {
+    color("darkgray")
+    translate([sg_cx, sg_cy, z])
+    linear_extrude(plate_h - 2 * z)
+    circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
+}
+
 // ── Large gear ────────────────────────────────────────────────────────────────
 
-module large_gear_outline() {
+module large_gear_outline(z = 0) {
     color("black")
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h)
-    difference() {
-        offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
-        gear_2d(lg_n, lg_r_tip, lg_r_root);
-    }
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
+    offset(delta = lg_outline) gear_2d(lg_n, lg_r_tip, lg_r_root);
 }
 
-module large_gear() {
+module large_gear(z = 0) {
     color("green")
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h)
-    difference() {
-        gear_2d(lg_n, lg_r_tip, lg_r_root);
-        circle(r=lg_r_bore, $fn=80);
-        offset(delta = arr_outline) rotation_arrows_2d();
-    }
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
+    gear_2d(lg_n, lg_r_tip, lg_r_root);
 }
 
-module large_gear_mid_ring() {
+module large_gear_mid_ring(z = 0) {
     color("black")
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h)
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
     difference() {
         circle(r = lg_mid_r + lg_mid_w, $fn=120);
-        circle(r = lg_mid_r - lg_mid_w, $fn=120);
+        //circle(r = lg_mid_r - lg_mid_w, $fn=120);
     }
 }
 
@@ -295,34 +225,40 @@ module rotation_arrows_2d() {
     }
 }
 
-module rotation_arrows_outline() {
+module rotation_arrows_outline(z = 0) {
     color("black")
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h)
-    difference() {
-        offset(delta = arr_outline) rotation_arrows_2d();
-        rotation_arrows_2d();
-    }
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
+    offset(delta = arr_outline) rotation_arrows_2d();
 }
 
-module rotation_arrows() {
+module rotation_arrows(z = 0) {
     color("lightgray")
-    translate([lg_cx, lg_cy, 0])
-    linear_extrude(plate_h)
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
     rotation_arrows_2d();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+module large_gear_hub(z = 0) {
+    color("darkgray")
+    translate([lg_cx, lg_cy, z])
+    linear_extrude(plate_h - 2 * z)
+    circle(r = lg_mid_r - lg_mid_w, $fn=120);
+}
 
-frame_with_id(["green", undef, undef, undef, undef, "green"]);
-plate();
-rivets();
-small_gear();
-small_gear_outline();
-large_gear_outline();
-large_gear();
-large_gear_mid_ring();
-rotation_arrows();
-rotation_arrows_outline();
-small_gear_hub();
-small_gear_mid_ring();
+// ── Layer chain ───────────────────────────────────────────────────────────────
+
+module layer_sg_outline()  { union() { difference() { plate();              small_gear_outline(-1);        } small_gear_outline();        } }
+module layer_sg()          { union() { difference() { layer_sg_outline();   small_gear(-1);                } small_gear();                } }
+module layer_sg_mid_ring() { union() { difference() { layer_sg();           small_gear_mid_ring(-1);       } small_gear_mid_ring();       } }
+module layer_sg_hub()      { union() { difference() { layer_sg_mid_ring();  small_gear_hub(-1);            } small_gear_hub();            } }
+module layer_lg_outline()  { union() { difference() { layer_sg_hub();       large_gear_outline(-1);        } large_gear_outline();        } }
+module layer_lg()          { union() { difference() { layer_lg_outline();   large_gear(-1);                } large_gear();                } }
+module layer_lg_mid_ring() { union() { difference() { layer_lg();           large_gear_mid_ring(-1);       } large_gear_mid_ring();       } }
+module layer_lg_hub()      { union() { difference() { layer_lg_mid_ring();  large_gear_hub(-1);            } large_gear_hub();            } }
+module layer_arr_outline() { union() { difference() { layer_lg_hub();       rotation_arrows_outline(-1);   } rotation_arrows_outline();   } }
+module layer_arr()         { union() { difference() { layer_arr_outline();  rotation_arrows(-1);           } rotation_arrows();           } }
+
+// ─────────────────────────────────────────────────────────────────────────────
+frame_with_id([undef, "green", undef, undef, "green", undef]);
+layer_arr();
