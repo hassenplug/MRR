@@ -98,19 +98,16 @@ module frame_with_id(colors = []) {
 }
 
 module plate() {
-    union() {
-        color("darkgray")
-        difference() {
-            cube([plate_w, plate_d, plate_h]);
-            rivet_grid(-1);
-            //small_gear_outline(-1);
-            //large_gear_hub(-1);
-            //large_gear_outline(-1);
-        }
-        color("lightgray") rivet_grid(0);
-        //color("black") small_gear_outline(0);
-        //color("black")  large_gear_hub(0);
+    color("darkgray")
+    difference() {
+        cube([plate_w, plate_d, plate_h]);
+        rivet_grid(-1);
+        small_gear_outline(-1);
+        large_gear_outline(-1);
     }
+    color("lightgray") rivet_grid(0);
+    color("black") small_gear_outline(0);
+    color("black")  large_gear_outline(0);
 }
 
 // ── Gear geometry ─────────────────────────────────────────────────────────────
@@ -128,6 +125,7 @@ module gear_tooth_2d(n, r_t, r_r, tw_factor = 1.0) {
 module gear_2d(n, r_t, r_r, tw_factor = 1.0, round_r = 0) {
     offset(r=round_r, $fn=16)
     offset(delta=-round_r)
+    circle(r=r_r, $fn=n*8);
     union() {
         circle(r=r_r, $fn=n*8);
         for (i=[0:n-1]) rotate([0,0, i*(360/n)]) gear_tooth_2d(n, r_t, r_r, tw_factor);
@@ -157,10 +155,7 @@ module small_gear_mid_ring(z = 0) {
     color("black")
     translate([sg_cx, sg_cy, z])
     linear_extrude(plate_h - 2 * z)
-    difference() {
-        circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
-        circle(r = sg_hub_ring_r - sg_hub_ring_w, $fn=80);
-    }
+    circle(r = sg_hub_ring_r + sg_hub_ring_w, $fn=80);
 }
 
 module small_gear_hub(z = 0) {
@@ -250,6 +245,7 @@ module large_gear_hub(z = 0) {
 
 module layer_sg_outline()  { union() { difference() { plate();              small_gear_outline(-1);        } small_gear_outline();        } }
 module layer_sg()          { union() { difference() { layer_sg_outline();   small_gear(-1);                } small_gear();                } }
+module layer_sg()          { union() { difference() { plate();              small_gear(-1);                } small_gear();                } }
 module layer_sg_mid_ring() { union() { difference() { layer_sg();           small_gear_mid_ring(-1);       } small_gear_mid_ring();       } }
 module layer_sg_hub()      { union() { difference() { layer_sg_mid_ring();  small_gear_hub(-1);            } small_gear_hub();            } }
 module layer_lg_outline()  { union() { difference() { layer_sg_hub();       large_gear_outline(-1);        } large_gear_outline();        } }
@@ -262,3 +258,5 @@ module layer_arr()         { union() { difference() { layer_arr_outline();  rota
 // ─────────────────────────────────────────────────────────────────────────────
 frame_with_id([undef, "green", undef, undef, "green", undef]);
 layer_arr();
+plate();
+layer_sg_outline();
