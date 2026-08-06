@@ -243,20 +243,23 @@ module large_gear_hub(z = 0) {
 
 // ── Layer chain ───────────────────────────────────────────────────────────────
 
-module layer_sg_outline()  { union() { difference() { plate();              small_gear_outline(-1);        } small_gear_outline();        } }
-module layer_sg()          { union() { difference() { layer_sg_outline();   small_gear(-1);                } small_gear();                } }
 module layer_sg()          { union() { difference() { plate();              small_gear(-1);                } small_gear();                } }
 module layer_sg_mid_ring() { union() { difference() { layer_sg();           small_gear_mid_ring(-1);       } small_gear_mid_ring();       } }
 module layer_sg_hub()      { union() { difference() { layer_sg_mid_ring();  small_gear_hub(-1);            } small_gear_hub();            } }
-module layer_lg_outline()  { union() { difference() { layer_sg_hub();       large_gear_outline(-1);        } large_gear_outline();        } }
-module layer_lg()          { union() { difference() { layer_lg_outline();   large_gear(-1);                } large_gear();                } }
+module layer_lg()          { union() { difference() { layer_sg_hub();       large_gear(-1);                } large_gear();                } }
 module layer_lg_mid_ring() { union() { difference() { layer_lg();           large_gear_mid_ring(-1);       } large_gear_mid_ring();       } }
 module layer_lg_hub()      { union() { difference() { layer_lg_mid_ring();  large_gear_hub(-1);            } large_gear_hub();            } }
 module layer_arr_outline() { union() { difference() { layer_lg_hub();       rotation_arrows_outline(-1);   } rotation_arrows_outline();   } }
 module layer_arr()         { union() { difference() { layer_arr_outline();  rotation_arrows(-1);           } rotation_arrows();           } }
 
 // ─────────────────────────────────────────────────────────────────────────────
-frame_with_id([undef, "green", undef, undef, "green", undef]);
-layer_arr();
-plate();
-layer_sg_outline();
+//frame_with_id([undef, "green", undef, undef, "green", undef]);
+//plate();
+layer_sg();
+//layer_sg_mid_ring();
+//layer_sg_hub();
+//layer_lg();
+//layer_lg_mid_ring();
+//layer_lg_hub();
+//layer_arr_outline();
+//layer_arr();
