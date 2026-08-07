@@ -10,11 +10,11 @@ frame_w = 1/16;
 hole_d = 3/32;
 hole_r = hole_d / 2;
 
-// Gear geometry — centered on tile
+// Ring geometry with inward-pointing teeth — centered on tile
+gear_r_tip  = 1.18;   // outer edge of ring (plain)
+gear_r_root = 1.00;   // ring inner edge; teeth root here
+gear_r_bore = 0.82;   // bore radius / tooth tip depth
 gear_n      = 20;
-gear_r_tip  = 1.18;
-gear_r_root = 1.00;
-gear_r_bore = 0.82;
 tooth_hw    = 4.5;
 tooth_tip_f = 0.80;
 
@@ -79,18 +79,25 @@ module rivets() {
 // ── Gear 2D helpers ───────────────────────────────────────────────────────────
 
 module gear_tooth_2d() {
+    shift   = (gear_r_root - gear_r_bore) / 2;
+    r_outer = gear_r_root + shift;
+    r_inner = gear_r_bore + shift;
     polygon([
-        [gear_r_root * cos(-tooth_hw),               gear_r_root * sin(-tooth_hw)],
-        [gear_r_tip  * cos(-tooth_hw * tooth_tip_f),  gear_r_tip  * sin(-tooth_hw * tooth_tip_f)],
-        [gear_r_tip  * cos( tooth_hw * tooth_tip_f),  gear_r_tip  * sin( tooth_hw * tooth_tip_f)],
-        [gear_r_root * cos( tooth_hw),               gear_r_root * sin( tooth_hw)],
+        [r_outer * cos(-tooth_hw),               r_outer * sin(-tooth_hw)],
+        [r_inner * cos(-tooth_hw * tooth_tip_f),  r_inner * sin(-tooth_hw * tooth_tip_f)],
+        [r_inner * cos( tooth_hw * tooth_tip_f),  r_inner * sin( tooth_hw * tooth_tip_f)],
+        [r_outer * cos( tooth_hw),               r_outer * sin( tooth_hw)],
     ]);
 }
 
 module gear_2d() {
+    circle(r = gear_r_tip, $fn = 160);
+}
+
+module bore_2d() {
     pitch = 360 / gear_n;
-    union() {
-        circle(r = gear_r_root, $fn = gear_n * 8);
+    difference() {
+        circle(r = gear_r_root, $fn = 160);
         for (i = [0:gear_n - 1]) rotate([0, 0, i * pitch]) gear_tooth_2d();
     }
 }
@@ -102,7 +109,7 @@ module gear_holes() {
     linear_extrude(plate_h + 0.002)
     difference() {
         gear_2d();
-        circle(r = gear_r_bore, $fn = 80);
+        bore_2d();
     }
 }
 
@@ -110,7 +117,7 @@ module gear() {
     color("black")
     translate([plate_w / 2, plate_d / 2, 0])
     linear_extrude(plate_h)
-    difference() { gear_2d(); circle(r = gear_r_bore, $fn = 80); }
+    difference() { gear_2d(); bore_2d(); }
 }
 
 // ── Gear bore hole & gear bore ────────────────────────────────────────────────
@@ -118,14 +125,14 @@ module gear() {
 module gear_bore_holes() {
     translate([plate_w / 2, plate_d / 2, -0.001])
     linear_extrude(plate_h + 0.002)
-    circle(r = gear_r_bore, $fn = 80);
+    bore_2d();
 }
 
 module gear_bore() {
     color([0.80, 0.80, 0.80])
     translate([plate_w / 2, plate_d / 2, 0])
     linear_extrude(plate_h)
-    circle(r = gear_r_bore - 0.001, $fn = 80);
+    offset(delta = -0.001) bore_2d();
 }
 
 // ── Label hole → label ────────────────────────────────────────────────────────
