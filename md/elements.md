@@ -271,6 +271,69 @@ The base plate uses the gray brushed-metal aesthetic from Element0.jpg.
 
 ---
 
+## Built SCAD Elements — Frame IDs & Renders
+
+The elements below have working SCAD implementations in `scad/`. Each uses the shared
+`frame_with_id(colors = [])` module to mark its identity: a 6-slot array, one slot per
+sixth of the frame, repeated identically on all four edges (bottom/right read in
+reverse — slot `5-i` — so the pattern is consistent when the tile is flipped). A slot
+set to `undef` leaves that segment plain black; any other value is the color painted
+into it. Renders below are OpenSCAD `--camera` snapshots from `scad/png/` (top =
+`CAMERA_T`, bottom = `CAMERA_B`); "Original" is the reference design image from
+`Images/`.
+
+### Base Plate & Belt Tiles
+
+| Element | Frame ID Colors | Top | Bottom | Original |
+|---|---|---|---|---|
+| element0 | `[lightgray, undef, undef, undef, undef, lightgray]` | <img src="../scad/png/element0_top.png" width="80"> | <img src="../scad/png/element0_bottom.png" width="80"> | <img src="../Images/Element0.jpg" width="100"> |
+| element10 | `[undef, undef, green, green, undef, undef]` | <img src="../scad/png/element10_top.png" width="80"> | <img src="../scad/png/element10_bottom.png" width="80"> | <img src="../Images/Element10.jpg" width="100"> |
+| element11 | `[undef, undef, green, green, green, green]` | <img src="../scad/png/element11_top.png" width="80"> | <img src="../scad/png/element11_bottom.png" width="80"> | <img src="../Images/Element11.jpg" width="100"> |
+| element12 | `[undef, undef, green, green, green, green]` | <img src="../scad/png/element12_top.png" width="80"> | <img src="../scad/png/element12_bottom.png" width="80"> | <img src="../Images/Element12.jpg" width="100"> |
+| element20 | `[undef, undef, blue, blue, undef, undef]` | <img src="../scad/png/element20_top.png" width="80"> | <img src="../scad/png/element20_bottom.png" width="80"> | <img src="../Images/Element20.jpg" width="100"> |
+| element21 | `[undef, undef, blue, blue, blue, blue]` | <img src="../scad/png/element21_top.png" width="80"> | <img src="../scad/png/element21_bottom.png" width="80"> | <img src="../Images/Element21.jpg" width="100"> |
+
+### Mechanical Gear Tiles
+
+| Element | Frame ID Colors | Top | Bottom | Original |
+|---|---|---|---|---|
+| element31 | `[undef, green, undef, undef, green, undef]` | <img src="../scad/png/element31_top.png" width="80"> | <img src="../scad/png/element31_bottom.png" width="80"> | <img src="../Images/Element31.jpg" width="100"> |
+| element32 | `[undef, red, undef, undef, red, undef]` | <img src="../scad/png/element32_top.png" width="80"> | <img src="../scad/png/element32_bottom.png" width="80"> | <img src="../Images/Element32.jpg" width="100"> |
+
+### Flag Tiles (element100 family)
+
+| Element | Frame ID Colors | Top | Bottom | Original |
+|---|---|---|---|---|
+| element100-1 | `[undef, red, red, red, red, red]` | <img src="../scad/png/element100-1_top.png" width="80"> | <img src="../scad/png/element100-1_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+| element100-2 | `[red, undef, red, red, red, red]` | <img src="../scad/png/element100-2_top.png" width="80"> | <img src="../scad/png/element100-2_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+| element100-3 | `[red, red, undef, red, red, red]` | <img src="../scad/png/element100-3_top.png" width="80"> | <img src="../scad/png/element100-3_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+| element100-4 | `[red, red, red, undef, red, red]` | <img src="../scad/png/element100-4_top.png" width="80"> | <img src="../scad/png/element100-4_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+| element100-5 | `[red, red, red, red, undef, red]` | <img src="../scad/png/element100-5_top.png" width="80"> | <img src="../scad/png/element100-5_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+| element100-6 | `[red, red, red, red, red, undef]` | <img src="../scad/png/element100-6_top.png" width="80"> | <img src="../scad/png/element100-6_bottom.png" width="80"> | <img src="../Images/Element100.jpg" width="100"> |
+
+### Gear Ring Tiles (element110 family)
+
+| Element | Frame ID Colors | Top | Bottom | Original |
+|---|---|---|---|---|
+| element110-1 | `[undef, green, green, green, green, green]` | <img src="../scad/png/element110-1_top.png" width="80"> | <img src="../scad/png/element110-1_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-2 | `[green, undef, green, green, green, green]` | <img src="../scad/png/element110-2_top.png" width="80"> | <img src="../scad/png/element110-2_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-3 | `[green, green, undef, green, green, green]` | <img src="../scad/png/element110-3_top.png" width="80"> | <img src="../scad/png/element110-3_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-4 | `[green, green, green, undef, green, green]` | <img src="../scad/png/element110-4_top.png" width="80"> | <img src="../scad/png/element110-4_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-5 | `[green, green, green, green, undef, green]` | <img src="../scad/png/element110-5_top.png" width="80"> | <img src="../scad/png/element110-5_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-6 | `[green, green, green, green, green, undef]` | <img src="../scad/png/element110-6_top.png" width="80"> | <img src="../scad/png/element110-6_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-7 | `[undef, green, green, green, green, undef]` | <img src="../scad/png/element110-7_top.png" width="80"> | <img src="../scad/png/element110-7_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+| element110-8 | `[green, undef, green, green, green, undef]` | <img src="../scad/png/element110-8_top.png" width="80"> | <img src="../scad/png/element110-8_bottom.png" width="80"> | <img src="../Images/Element110.jpg" width="100"> |
+
+### Vortex Portal Tiles (element120 family)
+
+| Element | Frame ID Colors | Top | Bottom | Original |
+|---|---|---|---|---|
+| element120-A | `[undef, orange, orange, orange, orange, orange]` | <img src="../scad/png/element120-A_top.png" width="80"> | <img src="../scad/png/element120-A_bottom.png" width="80"> | <img src="../Images/Element120.jpg" width="100"> |
+| element120-B | `[orange, undef, orange, orange, orange, orange]` | <img src="../scad/png/element120-B_top.png" width="80"> | <img src="../scad/png/element120-B_bottom.png" width="80"> | <img src="../Images/Element120.jpg" width="100"> |
+| element120-C | `[orange, orange, undef, orange, orange, orange]` | <img src="../scad/png/element120-C_top.png" width="80"> | <img src="../scad/png/element120-C_bottom.png" width="80"> | <img src="../Images/Element120.jpg" width="100"> |
+
+---
+
 ## Common Specifications
 
 | Property | Value |

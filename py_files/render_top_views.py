@@ -1,5 +1,5 @@
 """
-Render a top-down orthographic PNG snapshot of every .scad file in scad/.
+Render top-down and bottom-up orthographic PNG snapshots of every .scad file in scad/.
 
 Run:  python render_top_views.py [--scad-dir DIR] [--out DIR] [--openscad PATH]
 """
@@ -9,20 +9,27 @@ import os
 import subprocess
 import sys
 
-OPENSCAD_EXE = r"C:\Program Files (x86)\OpenSCAD\openscad.com"
+#OPENSCAD_EXE = r"C:\Program Files (x86)\OpenSCAD\openscad.com"
+OPENSCAD_EXE = r"C:\Program Files\OpenSCAD\openscad.com"
 IMG_SIZE = "300,300"
-CAMERA = "1.43,1.43,0,0,180,0,7.8"
+CAMERA_T = "1.435,1.435,0,0,0,0,7.55"
+CAMERA_B = "1.435,1.435,0,0,180,0,7.55"
+
+VIEWS = [
+    ("top", CAMERA_T),
+    ("bottom", CAMERA_B),
+]
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SCAD_DIR = os.path.normpath(os.path.join(THIS_DIR, "..", "scad"))
 
 
-def render(openscad_exe, scad_path, out_path):
+def render(openscad_exe, scad_path, out_path, camera):
     args = [
         openscad_exe,
         "-o", out_path,
         f"--imgsize={IMG_SIZE}",
-        f"--camera={CAMERA}",
+        f"--camera={camera}",
         "--autocenter",
         "--projection=ortho",
         scad_path,
@@ -51,18 +58,20 @@ def main():
     for filename in scad_files:
         scad_path = os.path.join(scad_dir, filename)
         stem = os.path.splitext(filename)[0]
-        out_path = os.path.join(out_dir, f"{stem}_top.png")
 
-        ok, err = render(args.openscad, scad_path, out_path)
-        status = "OK" if ok else "FAILED"
-        print(f"[{status}] {filename} -> {os.path.relpath(out_path, scad_dir)}")
-        if not ok:
-            failures.append((filename, err))
+        for view, camera in VIEWS:
+            out_path = os.path.join(out_dir, f"{stem}_{view}.png")
+
+            ok, err = render(args.openscad, scad_path, out_path, camera)
+            status = "OK" if ok else "FAILED"
+            print(f"[{status}] {filename} ({view}) -> {os.path.relpath(out_path, scad_dir)}")
+            if not ok:
+                failures.append((filename, view, err))
 
     if failures:
-        print(f"\n{len(failures)} file(s) failed:")
-        for filename, err in failures:
-            print(f"  {filename}: {err}")
+        print(f"\n{len(failures)} render(s) failed:")
+        for filename, view, err in failures:
+            print(f"  {filename} ({view}): {err}")
         sys.exit(1)
 
 
