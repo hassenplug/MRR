@@ -292,6 +292,7 @@ into it. Renders below are OpenSCAD `--camera` snapshots from `scad/png/` (top =
 | element12 | `[undef, undef, green, green, green, green]` | <img src="../scad/png/element12_top.png" width="80"> | <img src="../scad/png/element12_bottom.png" width="80"> | <img src="../Images/Element12.jpg" width="100"> |
 | element20 | `[undef, undef, blue, blue, undef, undef]` | <img src="../scad/png/element20_top.png" width="80"> | <img src="../scad/png/element20_bottom.png" width="80"> | <img src="../Images/Element20.jpg" width="100"> |
 | element21 | `[undef, undef, blue, blue, blue, blue]` | <img src="../scad/png/element21_top.png" width="80"> | <img src="../scad/png/element21_bottom.png" width="80"> | <img src="../Images/Element21.jpg" width="100"> |
+| element22 | `[undef, undef, blue, blue, blue, blue]` | <img src="../scad/png/element22_top.png" width="80"> | <img src="../scad/png/element22_bottom.png" width="80"> | <img src="../Images/Element22.jpg" width="100"> |
 
 ### Mechanical Gear Tiles
 
