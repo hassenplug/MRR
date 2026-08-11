@@ -1,4 +1,4 @@
-// modules.scad — shared tile-building blocks: plate, rivets, edge ID marks,
+// sub_base_plate.scad — shared tile-building blocks: plate, rivets, edge ID marks,
 // and the common plate/hole dimensional constants used by every tile.
 // Units: inches
 //
@@ -6,7 +6,7 @@
 // before any code in the caller that references plate_w/plate_d/plate_h/
 // frame_w/hole_d/hole_r: a variable defined only inside an included file is
 // invisible to code positioned before the include statement.
-//   include <modules.scad>
+//   include <sub_base_plate.scad>
 //   plate(["red", undef, "blue", undef, undef, "green"]);
 //
 // plate(colors) is the main entry point: it builds the complete base tile in

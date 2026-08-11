@@ -20,6 +20,15 @@ BASE     = Path(__file__).parent
 MD_FILE  = BASE / "md" / "piece_count.md"
 OUT_DIR  = BASE / "3mf"
 SCAD_DIR = BASE / "scad"
+RENDER_SCRIPT = BASE / "py_files" / "render_top_views.py"
+
+
+def render_previews(scad_path):
+    """Render top/bottom preview PNGs for scad_path via render_top_views.py."""
+    subprocess.run(
+        [sys.executable, str(RENDER_SCRIPT.relative_to(BASE)), str(scad_path.relative_to(BASE))],
+        cwd=str(BASE),
+    )
 
 
 def parse_element_id(cell):
@@ -141,6 +150,8 @@ def main():
             print(f"  FAILED (exit {result.returncode})")
         else:
             built += 1
+            #render_previews(top_scad)
+            render_previews(bottom_scad)
 
     print(f"\nDone: {built} built, {skipped_exists} skipped (already exists), "
           f"{skipped_missing} skipped (missing SCAD), {skipped_no_need} skipped (no print need)")

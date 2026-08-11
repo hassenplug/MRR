@@ -1,17 +1,10 @@
-// flag.scad — shared pennant flag, pole, and label geometry
-// Requires caller to define: plate_w, plate_d, plate_h, hole_r (see modules.scad)
-// and gear_r_tip (see innergears.scad — flag_tip_x is sized off the gear ring)
+// sub_element100.scad — shared assembly for element100 flag tile variants
+// Requires caller to define: plate_colors (6-slot frame color array),
+// label_num (number painted on the flag)
 // Units: inches
-//
-// Usage — must be `include`, positioned after modules.scad and innergears.scad:
-//   include <modules.scad>
-//   include <innergears.scad>
-//   include <flag.scad>
-//   flag_label("1");
-//   label_holes("1");
-//
-// flag_label_2d(label)/flag_label(label)/label_holes(label) take the text to
-// paint on the pennant so each tile variant can pass its own number.
+
+include <sub_base_plate.scad>
+include <sub_innergears.scad>
 
 // Pole — same inset_x gap from right rivet column as rivets are from edge
 pole_r   = 0.04;
@@ -100,4 +93,43 @@ module flag_label(label) {
     color("white")
     linear_extrude(plate_h)
     flag_label_2d(label);
+}
+
+// ── Assembly ──────────────────────────────────────────────────────────────────
+// Each level: difference() cuts the holes INTO the running assembly,
+//             union() then adds the feature that fills those holes.
+// Innermost = first step; outermost = last step.
+
+union() {                                           // step 5: add label
+    difference() {
+        union() {                                   // step 4: add flag pole & flag
+            difference() {
+                union() {                           // step 3: add flag outline
+                    difference() {
+                        union() {                   // step 2: add gear bore
+                            difference() {
+                                union() {           // step 1: add gear
+                                    difference() {
+                                        plate(plate_colors);   // step 0: plate (frame + rivets)
+                                        gear_holes();       // cut gear holes
+                                    }
+                                    gear("darkred");        // fill with gear
+                                }
+                                gear_bore_holes();          // cut gear bore hole
+                            }
+                            gear_bore("lightgray");         // fill with gear bore
+                        }
+                        flag_outline_holes();               // cut flag outline hole
+                    }
+                    flag_outline();                         // fill with flag outline
+                }
+                flag_pole_holes();                          // cut flag pole hole
+                flag_holes();                               // cut flag hole
+            }
+            flag_pole();                                    // fill with flag pole
+            flag();                                         // fill with flag
+        }
+        label_holes(label_num);                             // cut label hole
+    }
+    flag_label(label_num);                                  // fill with label
 }

@@ -22,7 +22,8 @@ import tempfile
 import sys
 from pathlib import Path
 
-OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
+#OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
+OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
 QUIET = False
 
 
@@ -36,7 +37,7 @@ def find_colors(scad_path):
     Return list of (label, scad_expr) for each unique color() call, in order.
     Handles both string colors — color("name") — and array colors — color([r,g,b]).
     Follows include<>/use<> statements recursively — shared modules (e.g.
-    modules.scad's plate()/rivets()/frame_with_id()) define their color() calls
+    sub_base_plate.scad's plate()/rivets()/frame_with_id()) define their color() calls
     in the included file, not in the file passed on the command line.
     label   : safe identifier used in filenames and part names
     scad_expr: the raw expression to compare against in the filter (e.g. '"black"'

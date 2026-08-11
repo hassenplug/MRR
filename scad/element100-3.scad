@@ -1,45 +1,7 @@
 // element100-3.scad
 // Flag square tile variant — gear with pennant flag, number "3" on flag.
 
-include <modules.scad>
-include <innergears.scad>
-include <flag.scad>
+plate_colors = ["red", "red", undef, "red", "red", "red"];
+label_num    = "3";
 
-// ── Assembly ──────────────────────────────────────────────────────────────────
-// Each level: difference() cuts the holes INTO the running assembly,
-//             union() then adds the feature that fills those holes.
-// Innermost = first step; outermost = last step.
-
-union() {                                           // step 5: add label
-    difference() {
-        union() {                                   // step 4: add flag pole & flag
-            difference() {
-                union() {                           // step 3: add flag outline
-                    difference() {
-                        union() {                   // step 2: add gear bore
-                            difference() {
-                                union() {           // step 1: add gear
-                                    difference() {
-                                        plate(["red", "red", undef, "red", "red", "red"]);   // step 0: plate (frame + rivets)
-                                        gear_holes();       // cut gear holes
-                                    }
-                                    gear("darkred");        // fill with gear
-                                }
-                                gear_bore_holes();          // cut gear bore hole
-                            }
-                            gear_bore("lightgray");         // fill with gear bore
-                        }
-                        flag_outline_holes();               // cut flag outline hole
-                    }
-                    flag_outline();                         // fill with flag outline
-                }
-                flag_pole_holes();                          // cut flag pole hole
-                flag_holes();                               // cut flag hole
-            }
-            flag_pole();                                    // fill with flag pole
-            flag();                                         // fill with flag
-        }
-        label_holes("3");                                   // cut label hole
-    }
-    flag_label("3");                                        // fill with label
-}
+include <sub_element100.scad>

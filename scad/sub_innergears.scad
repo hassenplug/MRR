@@ -1,11 +1,11 @@
-// innergears.scad — shared inner gear ring (ring with inward-pointing teeth)
-// Requires caller to define: plate_w, plate_d, plate_h (see modules.scad)
+// sub_innergears.scad — shared inner gear ring (ring with inward-pointing teeth)
+// Requires caller to define: plate_w, plate_d, plate_h (see sub_base_plate.scad)
 // Units: inches
 //
-// Usage — must be `include`, positioned after modules.scad and before any
+// Usage — must be `include`, positioned after sub_base_plate.scad and before any
 // code that references gear_r_tip/gear_r_root/gear_r_bore:
-//   include <modules.scad>
-//   include <innergears.scad>
+//   include <sub_base_plate.scad>
+//   include <sub_innergears.scad>
 //   gear("darkred");
 //   gear_bore("lightgray");
 //
