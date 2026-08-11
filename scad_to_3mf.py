@@ -35,27 +35,42 @@ def find_colors(scad_path):
     """
     Return list of (label, scad_expr) for each unique color() call, in order.
     Handles both string colors — color("name") — and array colors — color([r,g,b]).
+    Follows include<>/use<> statements recursively — shared modules (e.g.
+    modules.scad's plate()/rivets()/frame_with_id()) define their color() calls
+    in the included file, not in the file passed on the command line.
     label   : safe identifier used in filenames and part names
     scad_expr: the raw expression to compare against in the filter (e.g. '"black"'
                or '[0.72, 0.22, 0.13]')
     """
-    text = Path(scad_path).read_text(encoding="utf-8")
-    pattern = re.compile(r'color\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\[[^\]]+\]))')
+    color_pattern   = re.compile(r'color\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\[[^\]]+\]))')
+    include_pattern = re.compile(r'^\s*(?:include|use)\s*<([^>]+)>', re.MULTILINE)
     seen = {}
-    for m in pattern.finditer(text):
-        if m.group(1):          # double-quoted string
-            label = m.group(1)
-            expr  = f'"{label}"'
-        elif m.group(2):        # single-quoted string
-            label = m.group(2)
-            expr  = f'"{label}"'
-        else:                   # array, e.g. [0.72, 0.22, 0.13]
-            raw   = m.group(3)
-            nums  = re.findall(r'[\d.]+', raw)
-            label = "rgb_" + "_".join(nums)
-            expr  = raw
-        if label not in seen:
-            seen[label] = expr
+    visited = set()
+
+    def scan(path):
+        path = path.resolve()
+        if path in visited or not path.exists():
+            return
+        visited.add(path)
+        text = path.read_text(encoding="utf-8")
+        for m in color_pattern.finditer(text):
+            if m.group(1):          # double-quoted string
+                label = m.group(1)
+                expr  = f'"{label}"'
+            elif m.group(2):        # single-quoted string
+                label = m.group(2)
+                expr  = f'"{label}"'
+            else:                   # array, e.g. [0.72, 0.22, 0.13]
+                raw   = m.group(3)
+                nums  = re.findall(r'[\d.]+', raw)
+                label = "rgb_" + "_".join(nums)
+                expr  = raw
+            if label not in seen:
+                seen[label] = expr
+        for m in include_pattern.finditer(text):
+            scan(path.parent / m.group(1))
+
+    scan(Path(scad_path))
     return list(seen.items())   # [(label, expr), ...]
 
 

@@ -2,13 +2,7 @@
 // Element 31: Large gear (centered) with rotation arrows and mid ring, meshed with small gear
 // Units: inches
 
-plate_w = 2 + 7/8;
-plate_d = 2 + 7/8;
-plate_h = 1/16;
-
-hole_d  = 3/32;
-hole_r  = hole_d / 2;
-frame_w = 1/16;
+include <modules.scad>
 
 // ── Large gear ────────────────────────────────────────────────────────────────
 lg_cx      = plate_w / 2;
@@ -57,75 +51,17 @@ arr_shaft_r_out = arr_r_mid + arr_shaft_w / 2;
 arr_arrow_span  = 55;                      // degrees each arrow arc covers
 arr_arrow_gap   = 360 / 4 - arr_arrow_span; // gap between arrows (20°)
 
+
 // ─────────────────────────────────────────────────────────────────────────────
 
-module rivet_grid(z=0) {
-    spacing_x = plate_w / 10;
-    spacing_y = plate_d / 10;
-    inset_x   = spacing_x / 2;
-    inset_y   = spacing_y / 2;
-    h = plate_h - 2 * z;
-    for (i = [0:9]) translate([inset_x + i*spacing_x, inset_y,           z]) cylinder(h=h, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([inset_x + i*spacing_x, plate_d-inset_y,   z]) cylinder(h=h, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([inset_x,           inset_y + i*spacing_y, z]) cylinder(h=h, r=hole_r, $fn=20);
-    for (i = [0:9]) translate([plate_w-inset_x, inset_y + i*spacing_y,   z]) cylinder(h=h, r=hole_r, $fn=20);
-}
-
-module frame_with_id(colors = []) {
-    id_cover = plate_h / 8;
-    region_w = plate_w / 6;
-    region_d = plate_d / 6;
-    mark_h   = plate_h - id_cover;
-
-    color("black")
+module tile_base() {
     difference() {
-        translate([-frame_w, -frame_w, 0])
-            cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
-        translate([0, 0, -0.001])
-            cube([plate_w, plate_d, plate_h + 0.002]);
-        // top/bottom/left/right straight runs only — corners stay solid black
-        translate([0, plate_d - 0.001, -0.001])
-            cube([plate_w, frame_w + 0.002, plate_h + 0.002]);
-        translate([0, -frame_w - 0.001, -0.001])
-            cube([plate_w, frame_w + 0.002, plate_h + 0.002]);
-        translate([-frame_w - 0.001, 0, -0.001])
-            cube([frame_w + 0.002, plate_d, plate_h + 0.002]);
-        translate([plate_w - 0.001, 0, -0.001])
-            cube([frame_w + 0.002, plate_d, plate_h + 0.002]);
-    }
-
-    for (i = [0:5]) {
-        c     = (colors[i] != undef) ? colors[i] : "black";
-
-        // top edge
-        color(c) translate([i * region_w, plate_d, 0]) cube([region_w, frame_w, mark_h]);
-        color("black") translate([i * region_w, plate_d, mark_h]) cube([region_w, frame_w, id_cover]);
-
-        // bottom edge (reversed)
-        color(c) translate([(5-i) * region_w, -frame_w, 0]) cube([region_w, frame_w, mark_h]);
-        color("black") translate([(5-i) * region_w, -frame_w, mark_h]) cube([region_w, frame_w, id_cover]);
-
-        // left edge
-        color(c) translate([-frame_w, i * region_d, 0]) cube([frame_w, region_d, mark_h]);
-        color("black") translate([-frame_w, i * region_d, mark_h]) cube([frame_w, region_d, id_cover]);
-
-        // right edge (reversed)
-        color(c) translate([plate_w, (5-i) * region_d, 0]) cube([frame_w, region_d, mark_h]);
-        color("black") translate([plate_w, (5-i) * region_d, mark_h]) cube([frame_w, region_d, id_cover]);
-    }
-}
-
-module plate() {
-    color("darkgray")
-    difference() {
-        cube([plate_w, plate_d, plate_h]);
-        rivet_grid();
+        plate([undef, "green", undef, undef, "green", undef]);
         small_gear_outline(-1);
         large_gear_outline(-1);
     }
-    color("lightgray") rivet_grid(0);
     color("black") small_gear_outline(0);
-    color("black")  large_gear_outline(0);
+    color("black") large_gear_outline(0);
 }
 
 // ── Gear geometry ─────────────────────────────────────────────────────────────
@@ -261,7 +197,7 @@ module large_gear_hub(z = 0) {
 
 // ── Layer chain ───────────────────────────────────────────────────────────────
 
-module layer_sg()          { union() { difference() { plate();              small_gear(-1);                } small_gear();                } }
+module layer_sg()          { union() { difference() { tile_base();          small_gear(-1);                } small_gear();                } }
 module layer_sg_mid_ring() { union() { difference() { layer_sg();           small_gear_mid_ring(-1);       } small_gear_mid_ring();       } }
 module layer_sg_hub()      { union() { difference() { layer_sg_mid_ring();  small_gear_hub(-1);            } small_gear_hub();            } }
 module layer_lg()          { union() { difference() { layer_sg_hub();       large_gear(-1);                } large_gear();                } }
@@ -272,8 +208,7 @@ module layer_arr_outline() { union() { difference() { layer_lg_hub();       rota
 module layer_arr()         { union() { difference() { layer_arr_outline();  rotation_arrows(-1);           } rotation_arrows();           } }
 
 // ─────────────────────────────────────────────────────────────────────────────
-frame_with_id([undef, "green", undef, undef, "green", undef]);
-plate();
+//tile_base();
 //layer_sg();
 //layer_sg_mid_ring();
 //layer_sg_hub();
@@ -281,4 +216,4 @@ plate();
 //layer_lg_mid_ring();
 //layer_lg_hub();
 //layer_arr_outline();
-//layer_arr();
+layer_arr();

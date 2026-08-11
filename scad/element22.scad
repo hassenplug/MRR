@@ -1,20 +1,14 @@
-// element22.scad — left-turn double-speed belt tile (two blue arrows)
+// element22.scad — left-turn double-speed belt tile (mirror of element21)
 // Units: inches
 
 straight   = false;
 left_turn  = true;
 right_turn = false;
 
-plate_w = 2 + 7/8;
-plate_d = 2 + 7/8;
-plate_h = 1/16;
-frame_w = 1/16;
+include <modules.scad>
 
 belt_w    = 1.75;
 belt_half = belt_w / 2;
-
-hole_d = 3/32;
-hole_r = hole_d / 2;
 
 roller_count  = 13;
 roller_h_size = 3/16;
@@ -55,36 +49,6 @@ arrow_lf_y = plate_d / 2;
 arrow_lf_x = plate_w - (plate_d - arrow_tip_y);
 // Horizontal shaft: end where the arrowhead outer edge meets the shaft strip outer edge
 h_straight = 0;
-
-module rivet_holes() {
-    spacing_x = plate_w / 10;
-    spacing_y = plate_d / 10;
-    inset_x   = spacing_x / 2;
-    inset_y   = spacing_y / 2;
-    translate([plate_w - inset_x, plate_d - inset_y, -1])
-        cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-    for (i = [0:9]) {
-        translate([inset_x, inset_y + i * spacing_y, -1])
-            cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-        translate([inset_x + i * spacing_x, inset_y, -1])
-            cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-        if (inset_x + i * spacing_x <= roller_x_lo + roller_r - hole_r ||
-            inset_x + i * spacing_x >= roller_x_hi - roller_r + hole_r) {
-            translate([inset_x + i * spacing_x, plate_d - inset_y, -1])
-                cylinder(h = plate_h + 2, r = hole_r, $fn = 20);
-        }
-    }
-}
-
-module frame() {
-    color("black")
-    difference() {
-        translate([-frame_w, -frame_w, 0])
-            cube([plate_w + 2 * frame_w, plate_d + 2 * frame_w, plate_h]);
-        translate([0, 0, -0.001])
-            cube([plate_w, plate_d, plate_h + 0.002]);
-    }
-}
 
 module belt_cutout() {
     // Straight vertical strip (top)
@@ -163,16 +127,6 @@ module roller_slots() {
     }
 }
 
-module plate() {
-    difference() {
-        color("darkgray")
-            cube([plate_w, plate_d, plate_h]);
-        rivet_holes();
-        roller_slots();
-        belt_cutout();
-    }
-}
-
 module rollers() {
     color("blue")
     difference() {
@@ -228,28 +182,6 @@ module rollers() {
     }
 }
 
-module rivets() {
-    spacing_x = plate_w / 10;
-    spacing_y = plate_d / 10;
-    inset_x   = spacing_x / 2;
-    inset_y   = spacing_y / 2;
-    color("lightgray") {
-        translate([plate_w - inset_x, plate_d - inset_y, 0])
-            cylinder(h = plate_h, r = hole_r, $fn = 20);
-        for (i = [0:9]) {
-            translate([inset_x, inset_y + i * spacing_y, 0])
-                cylinder(h = plate_h, r = hole_r, $fn = 20);
-            translate([inset_x + i * spacing_x, inset_y, 0])
-                cylinder(h = plate_h, r = hole_r, $fn = 20);
-            if (inset_x + i * spacing_x <= roller_x_lo + roller_r - hole_r ||
-                inset_x + i * spacing_x >= roller_x_hi - roller_r + hole_r) {
-                translate([inset_x + i * spacing_x, plate_d - inset_y, 0])
-                    cylinder(h = plate_h, r = hole_r, $fn = 20);
-            }
-        }
-    }
-}
-
 module arrow_2d() {
     polygon([
         [-arrow_shaft_w / 2, 0],
@@ -263,7 +195,7 @@ module arrow_2d() {
 }
 
 module arrows() {
-    color("blue") {
+    color("lightblue") {
         // Curved upward arrow (element11-style)
         union() {
             // Vertical segment: arc center up to arrowhead base
@@ -274,28 +206,23 @@ module arrows() {
                 translate([arrow_outline, 0])
                     square([arrow_shaft_w - 2*arrow_outline, y_merge_up - (plate_d/2 + r_curve)]);
             }
-            // Arc shaft: outer line 180°–265°, inner line 180°–260°
+            // Arc shaft: hollow annulus, lower-left quadrant (180°–270°)
             translate([cx_r, plate_d/2 + r_curve, 0])
             linear_extrude(plate_h)
-            union() {
-                // Outer arc line: 180° to 265°
-                intersection() {
+            intersection() {
+                difference() {
                     difference() {
                         circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
-                        circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
-                    }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:270]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
-                }
-                // Inner arc line: 180° to 260°
-                intersection() {
-                    difference() {
-                        circle(r = r_curve - arrow_shaft_w/2 + arrow_outline, $fn = 120);
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:270]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                    offset(delta = -arrow_outline)
+                    difference() {
+                        circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
+                        circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
+                    }
                 }
+                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
+                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
             }
             // Horizontal segment: from arc 270° endpoint going right
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
@@ -376,25 +303,20 @@ module belt() {
             // Arc shaft cutout
             translate([cx_r, plate_d/2 + r_curve, -0.001])
             linear_extrude(plate_h + 0.002)
-            union() {
-                // Outer arc line: 180° to 265°
-                intersection() {
+            intersection() {
+                difference() {
                     difference() {
                         circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
-                        circle(r = r_curve + arrow_shaft_w/2 - arrow_outline, $fn = 120);
-                    }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:270]) [(r_curve + arrow_shaft_w/2 + 0.1) * cos(a), (r_curve + arrow_shaft_w/2 + 0.1) * sin(a)]]));
-                }
-                // Inner arc line: 180° to 260°
-                intersection() {
-                    difference() {
-                        circle(r = r_curve - arrow_shaft_w/2 + arrow_outline, $fn = 120);
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
-                    polygon(concat([[0,0]],
-                        [for (a = [180:1:270]) [(r_curve - arrow_shaft_w/2 + 0.1) * cos(a), (r_curve - arrow_shaft_w/2 + 0.1) * sin(a)]]));
+                    offset(delta = -arrow_outline)
+                    difference() {
+                        circle(r = r_curve + arrow_shaft_w/2, $fn = 120);
+                        circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
+                    }
                 }
+                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
+                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
             }
             // Horizontal segment cutout
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])
@@ -442,9 +364,11 @@ module belt() {
 
 translate([plate_w, 0, 0])
 mirror([1, 0, 0]) {
-    frame();
-    plate();
-    rivets();
+    difference() {
+        plate([undef, undef, "lightblue", "lightblue", "lightblue", "lightblue"]);
+        roller_slots();
+        belt_cutout();
+    }
     rollers();
     belt();
     arrows();

@@ -49,7 +49,10 @@ def main():
     out_dir = os.path.abspath(args.out) if args.out else os.path.join(scad_dir, "png")
     os.makedirs(out_dir, exist_ok=True)
 
-    scad_files = sorted(f for f in os.listdir(scad_dir) if f.lower().endswith(".scad"))
+    scad_files = sorted(
+        f for f in os.listdir(scad_dir)
+        if f.lower().endswith(".scad") and f.lower().startswith("element")
+    )
     if not scad_files:
         print(f"No .scad files found in {scad_dir}")
         sys.exit(1)
