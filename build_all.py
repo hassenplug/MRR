@@ -117,11 +117,13 @@ def main():
         out_3mf     = OUT_DIR  / f"{out_name}.3mf"
 
         if not top_scad.exists():
-            print(f"Skipping {top_id}: {top_scad.relative_to(BASE)} not found")
+            if not args.quiet:
+                print(f"Skipping {top_id}: {top_scad.relative_to(BASE)} not found")
             skipped_missing += 1
             continue
         if not bottom_scad.exists():
-            print(f"Skipping {top_id}: {bottom_scad.relative_to(BASE)} not found")
+            if not args.quiet:
+                print(f"Skipping {top_id}: {bottom_scad.relative_to(BASE)} not found")
             skipped_missing += 1
             continue
         if out_3mf.exists():

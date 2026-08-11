@@ -9,7 +9,7 @@ double_speed = true;
 include <sub_base_plate.scad>
 include <sub_belts.scad>
 
-plate_colors = [undef, undef, "lightblue", "lightblue", undef, undef];
+plate_colors = [undef, undef, "blue", "blue", undef, undef];
 
 roller_color = "blue";
 arrow_color  = "lightblue";

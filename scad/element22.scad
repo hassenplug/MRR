@@ -9,19 +9,20 @@ double_speed = true;
 include <sub_base_plate.scad>
 include <sub_belts.scad>
 
-plate_colors = [undef, undef, "lightblue", "lightblue", "lightblue", "lightblue"];
+// Edge-ID colors are the reverse of element21's array: sub_belts.scad now
+// mirrors the belt/roller/arrow geometry internally (left_turn), so the
+// frame's color-coded edges must be manually reversed to match — the whole
+// tile is no longer wrapped in a geometric mirror() to do this for free.
+plate_colors = ["blue", "blue", "blue", "blue", undef, undef];
 
 roller_color = "blue";
 arrow_color  = "lightblue";
 
-translate([plate_w, 0, 0])
-mirror([1, 0, 0]) {
-    difference() {
-        plate(plate_colors);
-        roller_slots();
-        belt_cutout();
-    }
-    rollers();
-    belt();
-    arrow();
+difference() {
+    plate(plate_colors);
+    roller_slots();
+    belt_cutout();
 }
+rollers();
+belt();
+arrow();
