@@ -16,14 +16,15 @@ is shifted up by that amount so the two layers sit flush against each other.
 import os
 import re
 import struct
+from unittest import result
 import zipfile
 import subprocess
 import tempfile
 import sys
 from pathlib import Path
 
-#OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
-OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
+OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
+#OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
 QUIET = False
 
 
@@ -54,6 +55,8 @@ def find_colors(scad_path):
             return
         visited.add(path)
         text = path.read_text(encoding="utf-8")
+        #print(f" file: {text}")
+
         for m in color_pattern.finditer(text):
             if m.group(1):          # double-quoted string
                 label = m.group(1)

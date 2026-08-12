@@ -9,9 +9,9 @@ double_speed = false;
 include <sub_base_plate.scad>
 include <sub_belts.scad>
 
-plate_colors = [undef, undef, "green", "green", "green", "green"];
+plate_colors = [undef, undef, undef, undef, "green", "green"];
 
-roller_color = "green";
+roller_color = "darkgreen";
 arrow_color  = "green";
 
 difference() {

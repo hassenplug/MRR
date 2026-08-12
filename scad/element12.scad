@@ -13,9 +13,9 @@ include <sub_belts.scad>
 // mirrors the belt/roller/arrow geometry internally (left_turn), so the
 // frame's color-coded edges must be manually reversed to match — the whole
 // tile is no longer wrapped in a geometric mirror() to do this for free.
-plate_colors = ["green", "green", "green", "green", undef, undef];
+plate_colors = ["green", "green", undef, undef, undef, undef];
 
-roller_color = "green";
+roller_color = "darkgreen";
 arrow_color  = "green";
 
 difference() {
