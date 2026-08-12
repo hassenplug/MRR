@@ -107,15 +107,3 @@ module plate(colors = []) {
     }
 }
 
-module unused_color_test_blocks() {
-    // test blocks for color extraction
-    color("red")       cube([1, 1, 1]);
-    color("green")     cube([1, 1, 1]);
-    color("blue")      cube([1, 1, 1]);
-    color("black")     cube([1, 1, 1]);
-    color("white")     cube([1, 1, 1]);
-    color("darkblue")  cube([1, 1, 1]);
-    color("lightblue") cube([1, 1, 1]);
-    color("darkred")   cube([1, 1, 1]);
-    color("darkgreen") cube([1, 1, 1]);
-}

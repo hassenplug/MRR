@@ -35,46 +35,110 @@ def vprint(*args, **kwargs):
 
 def find_colors(scad_path):
     """
-    Return list of (label, scad_expr) for each unique color() call, in order.
-    Handles both string colors — color("name") — and array colors — color([r,g,b]).
-    Follows include<>/use<> statements recursively — shared modules (e.g.
-    sub_base_plate.scad's plate()/rivets()/frame_with_id()) define their color() calls
-    in the included file, not in the file passed on the command line.
+    Return list of (label, scad_expr) for each unique color used in the design, in
+    order of first discovery. Handles string colors — color("name") — and array
+    colors — color([r,g,b]) — plus every indirection pattern this codebase actually
+    uses, since color() is rarely called with a literal directly:
+      - color(some_var) where some_var = "name"; is a plain top-level assignment
+        somewhere in the merged file set (e.g. sub_belts.scad's color(roller_color),
+        set per-tile by each element*.scad).
+      - a colors-array literal (e.g. plate_colors = ["red", undef, ...]) whose
+        string elements get threaded one slot at a time into a shared module's
+        color(c) (e.g. frame_with_id()) — never itself a literal color() argument.
+      - "color-forwarding" modules — module NAME(c) { ... color(c) ... } — called
+        elsewhere as NAME("name") or NAME(some_var) (e.g. sub_innergears.scad's
+        gear(c)/gear_bore(c), called as gear("darkred")).
+    False positives here are harmless: make_filter_scad()'s runtime `if (c == expr)`
+    check is authoritative, so a wrongly-guessed candidate just renders 0 triangles
+    and gets skipped — it can never produce a wrong color, only a wasted render.
+    Follows include<>/use<> statements recursively — shared modules define their
+    color() calls (and color-forwarding modules) in the included file, not in the
+    file passed on the command line.
     label   : safe identifier used in filenames and part names
     scad_expr: the raw expression to compare against in the filter (e.g. '"black"'
                or '[0.72, 0.22, 0.13]')
     """
-    color_pattern   = re.compile(r'color\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\[[^\]]+\]))')
-    include_pattern = re.compile(r'^\s*(?:include|use)\s*<([^>]+)>', re.MULTILINE)
-    seen = {}
-    visited = set()
+    color_pattern      = re.compile(r'color\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\[[^\]]+\])|(\w+))')
+    include_pattern    = re.compile(r'^\s*(?:include|use)\s*<([^>]+)>', re.MULTILINE)
+    assign_pattern     = re.compile(r'^\s*(\w+)\s*=\s*([^;]+);', re.MULTILINE)
+    array_pattern      = re.compile(r'\[[^\[\]]*\]')
+    string_pattern     = re.compile(r'"([^"\']+)"|\'([^"\']+)\'')
+    module_def_pattern = re.compile(r'module\s+(\w+)\s*\(\s*(\w+)')
 
-    def scan(path):
+    visited = set()
+    chunks  = []
+
+    def strip_comments(text):
+        text = re.sub(r'/\*.*?\*/', '', text, flags=re.S)
+        return re.sub(r'//[^\n]*', '', text)
+
+    def collect(path):
         path = path.resolve()
         if path in visited or not path.exists():
             return
         visited.add(path)
-        text = path.read_text(encoding="utf-8")
-        #print(f" file: {text}")
-
-        for m in color_pattern.finditer(text):
-            if m.group(1):          # double-quoted string
-                label = m.group(1)
-                expr  = f'"{label}"'
-            elif m.group(2):        # single-quoted string
-                label = m.group(2)
-                expr  = f'"{label}"'
-            else:                   # array, e.g. [0.72, 0.22, 0.13]
-                raw   = m.group(3)
-                nums  = re.findall(r'[\d.]+', raw)
-                label = "rgb_" + "_".join(nums)
-                expr  = raw
-            if label not in seen:
-                seen[label] = expr
+        text = strip_comments(path.read_text(encoding="utf-8"))
+        chunks.append(text)
         for m in include_pattern.finditer(text):
-            scan(path.parent / m.group(1))
+            collect(path.parent / m.group(1))
 
-    scan(Path(scad_path))
+    collect(Path(scad_path))
+    merged = "\n".join(chunks)
+
+    seen = {}
+
+    def add_string(name):
+        if name not in seen:
+            seen[name] = f'"{name}"'
+
+    def add_array(raw):
+        if not string_pattern.search(raw):   # numeric rgb(a) array, not a colors[] list
+            nums  = re.findall(r'[\d.]+', raw)
+            label = "rgb_" + "_".join(nums)
+            if label not in seen:
+                seen[label] = raw
+
+    variables = {m.group(1): m.group(2).strip() for m in assign_pattern.finditer(merged)}
+
+    def resolve_identifier(name):
+        sm = string_pattern.match(variables.get(name, ""))
+        if sm:
+            add_string(sm.group(1) or sm.group(2))
+
+    # Direct color() calls: literal strings/arrays, or a bare variable reference.
+    for m in color_pattern.finditer(merged):
+        if m.group(1):
+            add_string(m.group(1))
+        elif m.group(2):
+            add_string(m.group(2))
+        elif m.group(3):
+            add_array(m.group(3))
+        elif m.group(4):
+            resolve_identifier(m.group(4))
+
+    # Color names threaded through a colors[] array param (e.g. plate_colors)
+    # into a shared module's per-slot color(c) — never a literal color() argument.
+    for arr in array_pattern.finditer(merged):
+        for sm in string_pattern.finditer(arr.group(0)):
+            add_string(sm.group(1) or sm.group(2))
+
+    # Color-forwarding modules: module NAME(c) { ... color(c) ... }. Once found,
+    # resolve every call site's first argument the same way as a direct color() arg.
+    for dm in module_def_pattern.finditer(merged):
+        name, param = dm.group(1), dm.group(2)
+        next_def  = module_def_pattern.search(merged, dm.end())
+        body      = merged[dm.end(): next_def.start() if next_def else len(merged)]
+        if not re.search(rf'color\s*\(\s*{re.escape(param)}\b', body):
+            continue
+        call_pattern = re.compile(rf'\b{re.escape(name)}\s*\(\s*(?:"([^"\']+)"|\'([^"\']+)\'|(\w+))')
+        for cm in call_pattern.finditer(merged):
+            if cm.group(1):
+                add_string(cm.group(1))
+            elif cm.group(2):
+                add_string(cm.group(2))
+            elif cm.group(3) and cm.group(3) != param:   # skip the definition header itself
+                resolve_identifier(cm.group(3))
+
     return list(seen.items())   # [(label, expr), ...]
 
 

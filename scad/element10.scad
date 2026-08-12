@@ -11,7 +11,7 @@ include <sub_belts.scad>
 
 plate_colors = [undef, undef, "green", "green", undef, undef];
 
-roller_color = "green";
+roller_color = "darkgreen";
 arrow_color  = "green";
 
 difference() {

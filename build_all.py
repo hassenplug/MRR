@@ -22,6 +22,13 @@ OUT_DIR  = BASE / "3mf"
 SCAD_DIR = BASE / "scad"
 RENDER_SCRIPT = BASE / "py_files" / "render_top_views.py"
 
+QUIET = False
+
+
+def vprint(*args, **kwargs):
+    if not QUIET:
+        print(*args, **kwargs)
+
 
 def render_previews(scad_path):
     """Render top/bottom preview PNGs for scad_path via render_top_views.py."""
@@ -40,10 +47,12 @@ def parse_element_id(cell):
 
 
 def main():
+    global QUIET
     parser = argparse.ArgumentParser()
     parser.add_argument("--quiet", "-q", action="store_true",
                         help="Suppress per-color rendering output")
     args = parser.parse_args()
+    QUIET = args.quiet
 
     OUT_DIR.mkdir(exist_ok=True)
 
@@ -57,7 +66,7 @@ def main():
             break
 
     if header_idx is None:
-        print("Could not find header row in piece_count.md")
+        vprint("Could not find header row in piece_count.md")
         sys.exit(1)
 
     headers = [c.strip() for c in lines[header_idx].split("|")]
@@ -74,7 +83,7 @@ def main():
     need_col  = col("Need to Print")
 
     if None in (elem_col, image_col, back_col, need_col):
-        print(f"Could not locate required columns. Found: {headers}")
+        vprint(f"Could not locate required columns. Found: {headers}")
         sys.exit(1)
 
     data_lines = lines[header_idx + 2:]  # skip header + separator
@@ -108,7 +117,7 @@ def main():
 
        # if not top_id or not bottom_id or not out_name:
         if not bottom_id or not out_name:
-            print(f"Skipping row (could not parse element IDs): {line.strip()}")
+            vprint(f"Skipping row (could not parse element IDs): {line.strip()}")
             skipped_missing += 1
             continue
 
@@ -117,18 +126,15 @@ def main():
         out_3mf     = OUT_DIR  / f"{out_name}.3mf"
 
         if not top_scad.exists():
-            if not args.quiet:
-                print(f"Skipping {top_id}: {top_scad.relative_to(BASE)} not found")
+            vprint(f"Skipping {top_id}: {top_scad.relative_to(BASE)} not found")
             skipped_missing += 1
             continue
         if not bottom_scad.exists():
-            if not args.quiet:
-                print(f"Skipping {top_id}: {bottom_scad.relative_to(BASE)} not found")
+            vprint(f"Skipping {top_id}: {bottom_scad.relative_to(BASE)} not found")
             skipped_missing += 1
             continue
         if out_3mf.exists():
-            if not args.quiet:
-                print(f"Skipping {out_name}: {out_3mf.relative_to(BASE)} already exists")
+            vprint(f"Skipping {out_name}: {out_3mf.relative_to(BASE)} already exists")
             skipped_exists += 1
             continue
 
@@ -149,7 +155,7 @@ def main():
             cmd.append("--quiet")
         result = subprocess.run(cmd, cwd=str(BASE))
         if result.returncode != 0:
-            print(f"  FAILED (exit {result.returncode})")
+            vprint(f"  FAILED (exit {result.returncode})")
         else:
             built += 1
             #render_previews(top_scad)
