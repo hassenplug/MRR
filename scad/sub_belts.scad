@@ -41,8 +41,8 @@ b_L = plate_w / 2 - belt_half;
 b_R = plate_w / 2 + belt_half;
 nub = roller_x_hi - b_R;
 
-arrow_w       = belt_w * 0.75;
-arrow_shaft_w = arrow_w * 0.4;
+arrow_w       = belt_w * 0.85;
+arrow_shaft_w = arrow_w * 0.45;
 arrow_head_h  = arrow_w / 2;
 arrow_outline = 1/8;
 arrow_tip_y   = 3 * plate_d / 20 + 1/4 + 7 * plate_d / 10;
@@ -56,8 +56,8 @@ r_outer = r_curve + belt_half;
 
 // Arrow shaft height is tuned per family; straight-double instead derives it
 // from the tile height so two arrows plus the gap fit exactly.
-arrow_shaft_h = (straight && double_speed) ? (plate_d * 3/4 - arrow_gap) / 2 - arrow_head_h
-              : straight                   ? 1.676
+arrow_shaft_h = (straight && double_speed) ? (plate_d * 3/4 - arrow_gap) / 2 - arrow_head_h + 0.05
+              : straight                   ? 1.4825
               : double_speed               ? 0.25
               : 1.5;
 arrow_h = arrow_shaft_h + arrow_head_h;
