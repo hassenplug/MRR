@@ -23,6 +23,7 @@ VIEWS = [
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SCAD_DIR = os.path.normpath(os.path.join(THIS_DIR, "..", "scad"))
+DEFAULT_OUT_DIR = os.path.normpath(os.path.join(THIS_DIR, "..", "Images", "png"))
 
 
 def render(openscad_exe, scad_path, out_path, camera):
@@ -67,12 +68,12 @@ def main():
     parser.add_argument("filename", nargs="?", default=None,
                         help="single .scad file to render (default: render every element*.scad file in --scad-dir)")
     parser.add_argument("--scad-dir", default=DEFAULT_SCAD_DIR, help="directory of .scad files")
-    parser.add_argument("--out", default=None, help="output directory for PNGs (default: <scad-dir>/png)")
+    parser.add_argument("--out", default=None, help=f"output directory for PNGs (default: {DEFAULT_OUT_DIR})")
     parser.add_argument("--openscad", default=OPENSCAD_EXE, help="path to openscad executable")
     args = parser.parse_args()
 
     scad_dir = os.path.abspath(args.scad_dir)
-    out_dir = os.path.abspath(args.out) if args.out else os.path.join(scad_dir, "png")
+    out_dir = os.path.abspath(args.out) if args.out else DEFAULT_OUT_DIR
     os.makedirs(out_dir, exist_ok=True)
 
     if args.filename:

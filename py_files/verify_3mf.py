@@ -9,8 +9,8 @@ Checks, in order:
   4. Mesh geometry        - manifold, no degenerate/duplicate triangles (via trimesh)
 
 Usage:
-    py -3.14 verify_3mf.py <file.3mf> [more.3mf ...]
-    py -3.14 verify_3mf.py 3mf/element31.3mf
+    py -3.14 py_files/verify_3mf.py <file.3mf> [more.3mf ...]
+    py -3.14 py_files/verify_3mf.py 3mf/element31.3mf
 """
 
 import sys
@@ -214,7 +214,7 @@ def verify_file(path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: verify_3mf.py <file.3mf> [more.3mf ...]")
+        print("Usage: py_files/verify_3mf.py <file.3mf> [more.3mf ...]")
         sys.exit(1)
 
     any_failed = False

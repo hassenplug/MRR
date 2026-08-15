@@ -384,7 +384,11 @@ module curved_arrow_fill() {
                 translate([arrow_outline, 0])
                     square([arrow_shaft_w - 2*arrow_outline, y_merge_up - (plate_d/2 + r_curve)]);
             }
-            // Arc shaft: hollow annulus, lower-left quadrant (180°–270°)
+            // Arc shaft: hollow annulus, 180°–225° (stops 45° short of the old
+            // 270° end, at arc_stop — a radial cut, which is why it comes out
+            // at exactly 45° — where the closing line below connects it).
+            arc_stop = 225;
+            arc_big = 10;
             translate([cx_r, plate_d/2 + r_curve, 0])
             linear_extrude(plate_h)
             intersection() {
@@ -399,8 +403,7 @@ module curved_arrow_fill() {
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
                 }
-                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
-                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
+                polygon([[0, 0], [arc_big*cos(180), arc_big*sin(180)], [arc_big*cos(arc_stop), arc_big*sin(arc_stop)]]);
             }
             // Horizontal segment: from arc 270° endpoint going right
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
@@ -410,19 +413,13 @@ module curved_arrow_fill() {
                 translate([0, arrow_outline])
                     square([h_straight, arrow_shaft_w - 2*arrow_outline]);
             }
-            // End cap — 90° V matching arrowhead tip angle
-            translate([cx_r + h_straight, plate_d/2, 0])
+            // Closing line: a 45° radial spoke at arc_stop, connecting the
+            // outer and inner rail arcs exactly where the shaft-arc stops.
+            translate([cx_r, plate_d/2 + r_curve, 0])
+            rotate([0, 0, arc_stop])
+            translate([r_curve - arrow_shaft_w/2, -arrow_outline/2, 0])
             linear_extrude(plate_h)
-            union() {
-                hull() {
-                    translate([-arrow_shaft_w / 2, 0]) circle(r = arrow_outline / 2, $fn = 20);
-                    translate([-arrow_outline / sqrt(2),  arrow_shaft_w / 2 - arrow_outline / sqrt(2)]) circle(r = arrow_outline / 2, $fn = 20);
-                }
-                hull() {
-                    translate([-arrow_shaft_w / 2, 0]) circle(r = arrow_outline / 2, $fn = 20);
-                    translate([-arrow_outline / sqrt(2), -arrow_shaft_w / 2 + arrow_outline / sqrt(2)]) circle(r = arrow_outline / 2, $fn = 20);
-                }
-            }
+            square([arrow_shaft_w, arrow_outline]);
             // Arrowhead — head only, base open to vertical shaft
             translate([cx, arrow_up_y, 0])
             linear_extrude(plate_h)
@@ -507,7 +504,9 @@ module curved_arrow_cutout() {
                 translate([arrow_outline, 0])
                     square([arrow_shaft_w - 2*arrow_outline, y_merge_up - (plate_d/2 + r_curve)]);
             }
-            // Arc shaft cutout
+            // Arc shaft cutout, 180°–225° (see fill counterpart for arc_stop)
+            arc_stop = 225;
+            arc_big = 10;
             translate([cx_r, plate_d/2 + r_curve, -0.001])
             linear_extrude(plate_h + 0.002)
             intersection() {
@@ -522,8 +521,7 @@ module curved_arrow_cutout() {
                         circle(r = r_curve - arrow_shaft_w/2, $fn = 120);
                     }
                 }
-                translate([-(r_curve + arrow_shaft_w/2), -(r_curve + arrow_shaft_w/2)])
-                    square([r_curve + arrow_shaft_w/2, r_curve + arrow_shaft_w/2]);
+                polygon([[0, 0], [arc_big*cos(180), arc_big*sin(180)], [arc_big*cos(arc_stop), arc_big*sin(arc_stop)]]);
             }
             // Horizontal segment cutout
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])
@@ -533,19 +531,12 @@ module curved_arrow_cutout() {
                 translate([0, arrow_outline])
                     square([h_straight, arrow_shaft_w - 2*arrow_outline]);
             }
-            // End cap cutout — 90° V matching arrowhead tip angle
-            translate([cx_r + h_straight, plate_d/2, -0.001])
+            // Closing line cutout: 45° radial spoke at arc_stop (see fill counterpart)
+            translate([cx_r, plate_d/2 + r_curve, -0.001])
+            rotate([0, 0, arc_stop])
+            translate([r_curve - arrow_shaft_w/2, -arrow_outline/2, 0])
             linear_extrude(plate_h + 0.002)
-            union() {
-                hull() {
-                    translate([-arrow_shaft_w / 2, 0]) circle(r = arrow_outline / 2, $fn = 20);
-                    translate([-arrow_outline / sqrt(2),  arrow_shaft_w / 2 - arrow_outline / sqrt(2)]) circle(r = arrow_outline / 2, $fn = 20);
-                }
-                hull() {
-                    translate([-arrow_shaft_w / 2, 0]) circle(r = arrow_outline / 2, $fn = 20);
-                    translate([-arrow_outline / sqrt(2), -arrow_shaft_w / 2 + arrow_outline / sqrt(2)]) circle(r = arrow_outline / 2, $fn = 20);
-                }
-            }
+            square([arrow_shaft_w, arrow_outline]);
             // Arrowhead cutout (head only)
             translate([cx, arrow_up_y, -0.001])
             linear_extrude(plate_h + 0.002)

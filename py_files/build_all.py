@@ -4,9 +4,9 @@ Reads md/piece_count.md and builds 3MF files for all elements
 where "Need to Print" > 0 and both top and bottom SCAD files exist.
 
 Usage:
-    py -3.12 build_all.py
+    py -3.12 py_files/build_all.py
 
-    cd "c:/Users/hasse/OneDrive/Documents/git/MRR" && py -3.12 build_all.py
+    cd "c:/Users/hasse/OneDrive/Documents/git/MRR" && py -3.12 py_files/build_all.py
 
 """
 
@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE     = Path(__file__).parent
+BASE     = Path(__file__).parent.parent
 MD_FILE  = BASE / "md" / "piece_count.md"
 OUT_DIR  = BASE / "3mf"
 SCAD_DIR = BASE / "scad"
@@ -147,7 +147,7 @@ def main():
 
         print(f"Building {out_name}  {top_scad.relative_to(BASE)} + {bottom_scad.relative_to(BASE)} -> {out_3mf.relative_to(BASE)}")
 
-        cmd = [sys.executable, "scad_to_3mf.py",
+        cmd = [sys.executable, "py_files/scad_to_3mf.py",
                str(top_scad.relative_to(BASE)),
                str(bottom_scad.relative_to(BASE)),
                str(out_3mf.relative_to(BASE))]

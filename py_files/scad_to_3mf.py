@@ -6,8 +6,8 @@ All parts are sub-volumes of a single parent object so Bambu keeps them in the s
 coordinate system (no independent drop-to-plate per color).
 
 Usage:
-    py -3.12 scad_to_3mf.py <input.scad> [output.3mf]
-    py -3.12 scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>
+    py -3.12 py_files/scad_to_3mf.py <input.scad> [output.3mf]
+    py -3.12 py_files/scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>
 
 Two-file mode: bottom is rendered at z=0, its height is measured, then top geometry
 is shifted up by that amount so the two layers sit flush against each other.
@@ -395,8 +395,8 @@ def main():
 
     if len(sys.argv) < 2 or len(sys.argv) > 4:
         print("Usage:")
-        print("  scad_to_3mf.py <input.scad> [output.3mf]")
-        print("  scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>")
+        print("  py_files/scad_to_3mf.py <input.scad> [output.3mf]")
+        print("  py_files/scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>")
         sys.exit(1)
 
     if two_file_mode:
