@@ -53,7 +53,7 @@ module rivets() {
 }
 
 module frame_with_id(colors = []) {
-    id_cover = plate_h / 8;
+    id_cover = plate_h / 4;
     region_w = plate_w / 6;
     region_d = plate_d / 6;
     mark_h   = plate_h - id_cover;
