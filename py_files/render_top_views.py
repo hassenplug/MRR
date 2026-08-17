@@ -1,5 +1,5 @@
 """
-Render top-down and bottom-up orthographic PNG snapshots of .scad files in scad/.
+Render top, bottom, left, and right orthographic PNG snapshots of .scad files in scad/.
 
 Run:  python render_top_views.py [--scad-dir DIR] [--out DIR] [--openscad PATH]
       python render_top_views.py element10.scad [--out DIR]              # single file
@@ -15,10 +15,14 @@ OPENSCAD_EXE = r"C:\Program Files\OpenSCAD\openscad.com"
 IMG_SIZE = "300,300"
 CAMERA_T = "1.435,1.435,0,0,0,0,7.55"
 CAMERA_B = "1.435,1.435,0,0,180,0,7.55"
+CAMERA_L = "1.435,1.435,0,90,0,90,7.55"
+CAMERA_R = "1.435,1.435,0,90,0,270,7.55"
 
 VIEWS = [
     ("top", CAMERA_T),
     ("bottom", CAMERA_B),
+    ("left", CAMERA_L),
+    ("right", CAMERA_R),
 ]
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +45,7 @@ def render(openscad_exe, scad_path, out_path, camera):
 
 
 def render_views(openscad_exe, scad_path, out_dir):
-    """Render both top and bottom views of a single .scad file into out_dir.
+    """Render top, bottom, left, and right views of a single .scad file into out_dir.
     Returns a list of (view, ok, err, out_path) tuples.
     """
     stem = os.path.splitext(os.path.basename(scad_path))[0]
