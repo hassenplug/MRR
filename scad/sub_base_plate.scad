@@ -18,15 +18,22 @@
 // identically on all four edges. Bottom and right edges read the array in
 // reverse (slot 5-i) so the pattern stays consistent when the tile is flipped.
 // Any position left as undef or omitted defaults to black. 6 regions span the
-// straight run of each edge (corners always stay solid black). A thin black
-// layer covers the marks on the top face; marks are visible from the edge.
+// straight run of each edge (corners always stay solid black). Each mark is
+// sandwiched between a thin black id_cover layer on the bottom and another on
+// top; marks are visible only from the edge, not from the top or bottom face.
 
 plate_w = 2 + 7/8;
 plate_d = 2 + 7/8;
-plate_h = 1/16;
+plate_h = 1/8; // full plate thickness
 frame_w = 1/16;
 hole_d  = 3/32;
 hole_r  = hole_d / 2;
+
+pattern_h = 1/32;  // thickness of the raised pattern on the top surface of the plate, for example
+                   // the belt pattern or the gear teeth. This is a separate constant
+                   // from plate_h so that the pattern can be printed in a different
+                   // color than the plate itself.
+id_cover = plate_h / 8;
 
 module rivet_holes() {
     spacing_x = plate_w / 10;
@@ -53,10 +60,9 @@ module rivets() {
 }
 
 module frame_with_id(colors = []) {
-    id_cover = plate_h / 4;
     region_w = plate_w / 6;
     region_d = plate_d / 6;
-    mark_h   = plate_h - id_cover;
+    mark_h   = plate_h - 2 * id_cover;
 
     color("black")
     difference() {
@@ -78,21 +84,25 @@ module frame_with_id(colors = []) {
     for (i = [0:5]) {
         c     = (colors[i] != undef) ? colors[i] : "black";
 
-        // top edge
-        color(c) translate([i * region_w, plate_d, 0]) cube([region_w, frame_w, mark_h]);
-        color("black") translate([i * region_w, plate_d, mark_h]) cube([region_w, frame_w, id_cover]);
+        // top edge — id_cover, mark, id_cover
+        color("black") translate([i * region_w, plate_d, 0]) cube([region_w, frame_w, id_cover]);
+        color(c)       translate([i * region_w, plate_d, id_cover]) cube([region_w, frame_w, mark_h]);
+        color("black") translate([i * region_w, plate_d, id_cover + mark_h]) cube([region_w, frame_w, id_cover]);
 
-        // bottom edge (reversed)
-        color(c) translate([(5-i) * region_w, -frame_w, 0]) cube([region_w, frame_w, mark_h]);
-        color("black") translate([(5-i) * region_w, -frame_w, mark_h]) cube([region_w, frame_w, id_cover]);
+        // bottom edge (reversed) — id_cover, mark, id_cover
+        color("black") translate([(5-i) * region_w, -frame_w, 0]) cube([region_w, frame_w, id_cover]);
+        color(c)       translate([(5-i) * region_w, -frame_w, id_cover]) cube([region_w, frame_w, mark_h]);
+        color("black") translate([(5-i) * region_w, -frame_w, id_cover + mark_h]) cube([region_w, frame_w, id_cover]);
 
-        // left edge
-        color(c) translate([-frame_w, i * region_d, 0]) cube([frame_w, region_d, mark_h]);
-        color("black") translate([-frame_w, i * region_d, mark_h]) cube([frame_w, region_d, id_cover]);
+        // left edge — id_cover, mark, id_cover
+        color("black") translate([-frame_w, i * region_d, 0]) cube([frame_w, region_d, id_cover]);
+        color(c)       translate([-frame_w, i * region_d, id_cover]) cube([frame_w, region_d, mark_h]);
+        color("black") translate([-frame_w, i * region_d, id_cover + mark_h]) cube([frame_w, region_d, id_cover]);
 
-        // right edge (reversed)
-        color(c) translate([plate_w, (5-i) * region_d, 0]) cube([frame_w, region_d, mark_h]);
-        color("black") translate([plate_w, (5-i) * region_d, mark_h]) cube([frame_w, region_d, id_cover]);
+        // right edge (reversed) — id_cover, mark, id_cover
+        color("black") translate([plate_w, (5-i) * region_d, 0]) cube([frame_w, region_d, id_cover]);
+        color(c)       translate([plate_w, (5-i) * region_d, id_cover]) cube([frame_w, region_d, mark_h]);
+        color("black") translate([plate_w, (5-i) * region_d, id_cover + mark_h]) cube([frame_w, region_d, id_cover]);
     }
 }
 

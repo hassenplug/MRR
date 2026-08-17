@@ -1,5 +1,5 @@
 // sub_belts.scad — shared roller/belt/arrow geometry for element10, 11, 12, 20, 21, 22
-// Requires caller to define: plate_w, plate_d, plate_h (see sub_base_plate.scad)
+// Requires caller to define: plate_w, plate_d, pattern_h (see sub_base_plate.scad)
 // Units: inches
 //
 // Dispatch flags the caller must define before including this file:
@@ -89,26 +89,26 @@ module mirrored() {
 
 module straight_belt_cutout() {
     translate([(plate_w - belt_w) / 2, -0.001, -0.001])
-        cube([belt_w, plate_d + 0.002, plate_h + 0.002]);
+        cube([belt_w, plate_d + 0.002, pattern_h + 0.002]);
 }
 
 module curved_belt_cutout() {
     // Straight vertical strip (top)
     translate([(plate_w - belt_w) / 2, plate_d/2 + r_curve - 0.001, -0.001])
-        cube([belt_w, plate_d/2 - r_curve + 0.002, plate_h + 0.002]);
+        cube([belt_w, plate_d/2 - r_curve + 0.002, pattern_h + 0.002]);
     // Horizontal entry from right
     translate([cx_r - 0.001, plate_d/2 - belt_half - 0.001, -0.001])
-        cube([plate_w - cx_r + 0.002, belt_w + 0.002, plate_h + 0.002]);
+        cube([plate_w - cx_r + 0.002, belt_w + 0.002, pattern_h + 0.002]);
     // Arc corner fill: lower-left quadrant at (cx_r, plate_d/2 + r_curve)
     translate([cx_r, plate_d/2 + r_curve, -0.001])
-    linear_extrude(plate_h + 0.002)
+    linear_extrude(pattern_h + 0.002)
     intersection() {
         circle(r = r_outer, $fn = 120);
         translate([-r_outer, -r_outer]) square([r_outer, r_outer]);
     }
     // Curved corner — bottom-left of the top-right uncovered square
     translate([b_R, plate_d/2 + belt_half, -0.001])
-    linear_extrude(plate_h + 0.002)
+    linear_extrude(pattern_h + 0.002)
     difference() {
         square([b_L/2, b_L/2]);
         translate([b_L/2, b_L/2])
@@ -118,8 +118,8 @@ module curved_belt_cutout() {
 
 module belt_cutout() {
     if (straight)   straight_belt_cutout();
-    if (right_turn) curved_belt_cutout();
-    if (left_turn)  mirrored() curved_belt_cutout();
+    if (right_turn) mirrored() curved_belt_cutout();
+    if (left_turn)  curved_belt_cutout();
 }
 
 // ── Roller slots (cut into plate) ──────────────────────────────────────────────
@@ -130,9 +130,9 @@ module straight_roller_slots() {
         translate([0, 0, -0.001])
         hull() {
             translate([roller_x_lo + roller_r, cy, 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
             translate([roller_x_hi - roller_r, cy, 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
         }
     }
 }
@@ -145,10 +145,10 @@ module curved_roller_slots() {
             hull() {
                 translate([roller_x_lo + roller_r,
                            roller_inset + i * roller_y_step, 0])
-                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
                 translate([(i == roller_count - 1 ? roller_x_hi : b_R) - roller_r,
                            roller_inset + i * roller_y_step, 0])
-                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
             }
         }
     }
@@ -159,9 +159,9 @@ module curved_roller_slots() {
             translate([0, 0, -0.001])
             hull() {
                 translate([roller_inset + i * roller_y_step, roller_x_lo + roller_r, 0])
-                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
                 translate([roller_inset + i * roller_y_step, y_hi - roller_r, 0])
-                    cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
             }
         }
     }
@@ -174,9 +174,9 @@ module curved_roller_slots() {
         translate([0, 0, -0.001])
         hull() {
             translate([r_outer_bars - roller_r, 0, 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
             translate([r_outer_bars - roller_r - nub, 0, 0])
-                cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
         }
     }
     // d. Upper diagonal corner — upper-right of belt entry
@@ -184,16 +184,16 @@ module curved_roller_slots() {
     rotate([0, 0, 45])
     translate([0, 0, -0.001])
     hull() {
-        cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+        cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
         translate([nub, 0, 0])
-            cylinder(h = plate_h + 0.002, r = roller_r, $fn = 20);
+            cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
     }
 }
 
 module roller_slots() {
     if (straight)   straight_roller_slots();
-    if (right_turn) curved_roller_slots();
-    if (left_turn)  mirrored() curved_roller_slots();
+    if (right_turn) mirrored() curved_roller_slots();
+    if (left_turn)  curved_roller_slots();
 }
 
 // ── Rollers (filled, colored) ───────────────────────────────────────────────────
@@ -203,9 +203,9 @@ module straight_roller_bars() {
         cy = roller_inset + i * roller_y_step;
         hull() {
             translate([roller_x_lo + roller_r, cy, 0])
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h, r = roller_r, $fn = 20);
             translate([roller_x_hi - roller_r, cy, 0])
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h, r = roller_r, $fn = 20);
         }
     }
 }
@@ -217,10 +217,10 @@ module curved_roller_bars() {
             hull() {
                 translate([roller_x_lo + roller_r,
                            roller_inset + i * roller_y_step, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h, r = roller_r, $fn = 20);
                 translate([(i == roller_count - 1 ? roller_x_hi : b_R) - roller_r,
                            roller_inset + i * roller_y_step, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h, r = roller_r, $fn = 20);
             }
         }
     }
@@ -230,9 +230,9 @@ module curved_roller_bars() {
             y_hi = (i == roller_count - 1) ? plate_d - roller_x_lo : plate_d/2 + belt_half;
             hull() {
                 translate([roller_inset + i * roller_y_step, roller_x_lo + roller_r, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h, r = roller_r, $fn = 20);
                 translate([roller_inset + i * roller_y_step, y_hi - roller_r, 0])
-                    cylinder(h = plate_h, r = roller_r, $fn = 20);
+                    cylinder(h = pattern_h, r = roller_r, $fn = 20);
             }
         }
     }
@@ -244,18 +244,18 @@ module curved_roller_bars() {
         rotate([0, 0, theta])
         hull() {
             translate([r_outer_bars - roller_r, 0, 0])
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h, r = roller_r, $fn = 20);
             translate([r_outer_bars - roller_r - nub, 0, 0])
-                cylinder(h = plate_h, r = roller_r, $fn = 20);
+                cylinder(h = pattern_h, r = roller_r, $fn = 20);
         }
     }
     // d. Upper diagonal corner — upper-right of belt entry
     translate([b_R, plate_d/2 + belt_half, 0])
     rotate([0, 0, 45])
     hull() {
-        cylinder(h = plate_h, r = roller_r, $fn = 20);
+        cylinder(h = pattern_h, r = roller_r, $fn = 20);
         translate([nub, 0, 0])
-            cylinder(h = plate_h, r = roller_r, $fn = 20);
+            cylinder(h = pattern_h, r = roller_r, $fn = 20);
     }
 }
 
@@ -264,8 +264,8 @@ module rollers() {
     difference() {
         union() {
             if (straight)   straight_roller_bars();
-            if (right_turn) curved_roller_bars();
-            if (left_turn)  mirrored() curved_roller_bars();
+            if (right_turn) mirrored() curved_roller_bars();
+            if (left_turn)  curved_roller_bars();
         }
         belt_cutout();
     }
@@ -288,7 +288,7 @@ module arrow_2d() {
 module straight_arrow_fill() {
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         difference() {
             arrow_2d();
             offset(delta = -arrow_outline) arrow_2d();
@@ -296,7 +296,7 @@ module straight_arrow_fill() {
     } else {
         for (ay = [arrow1_y, arrow2_y])
             translate([plate_w / 2, ay, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             difference() {
                 arrow_2d();
                 offset(delta = -arrow_outline) arrow_2d();
@@ -307,7 +307,7 @@ module straight_arrow_fill() {
 module straight_arrow_cutout() {
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         difference() {
             arrow_2d();
             offset(delta = -arrow_outline) arrow_2d();
@@ -315,7 +315,7 @@ module straight_arrow_cutout() {
     } else {
         for (ay = [arrow1_y, arrow2_y])
             translate([plate_w / 2, ay, -0.001])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             difference() {
                 arrow_2d();
                 offset(delta = -arrow_outline) arrow_2d();
@@ -327,7 +327,7 @@ module curved_arrow_fill() {
     if (!double_speed) {
         // Vertical segment: cx, from arc center up to arrowhead base
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         difference() {
             square([arrow_shaft_w, y_merge - (plate_d/2 + r_curve)]);
             translate([arrow_outline, 0])
@@ -335,7 +335,7 @@ module curved_arrow_fill() {
         }
         // Arc shaft: hollow annulus, lower-left quadrant (180°–270°)
         translate([cx_r, plate_d/2 + r_curve, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         intersection() {
             difference() {
                 difference() {
@@ -353,7 +353,7 @@ module curved_arrow_fill() {
         }
         // Horizontal segment: from arc 270° endpoint at (cx_r, plate_d/2) going right
         translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         difference() {
             square([h_straight, arrow_shaft_w]);
             translate([0, arrow_outline])
@@ -361,10 +361,10 @@ module curved_arrow_fill() {
         }
         // End cap
         translate([cx_r + h_straight - arrow_outline, plate_d/2 - arrow_shaft_w/2, 0])
-            cube([arrow_outline, arrow_shaft_w, plate_h]);
+            cube([arrow_outline, arrow_shaft_w, pattern_h]);
         // Arrowhead — clipped from full arrow_2d so base is open to shaft
         translate([cx, arrow_y, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         intersection() {
             difference() {
                 arrow_2d();
@@ -378,7 +378,7 @@ module curved_arrow_fill() {
         union() {
             // Vertical segment: arc center up to arrowhead base
             translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             difference() {
                 square([arrow_shaft_w, y_merge_up - (plate_d/2 + r_curve)]);
                 translate([arrow_outline, 0])
@@ -390,7 +390,7 @@ module curved_arrow_fill() {
             arc_stop = 225;
             arc_big = 10;
             translate([cx_r, plate_d/2 + r_curve, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             intersection() {
                 difference() {
                     difference() {
@@ -407,7 +407,7 @@ module curved_arrow_fill() {
             }
             // Horizontal segment: from arc 270° endpoint going right
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             difference() {
                 square([h_straight, arrow_shaft_w]);
                 translate([0, arrow_outline])
@@ -418,11 +418,11 @@ module curved_arrow_fill() {
             translate([cx_r, plate_d/2 + r_curve, 0])
             rotate([0, 0, arc_stop])
             translate([r_curve - arrow_shaft_w/2, -arrow_outline/2, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             square([arrow_shaft_w, arrow_outline]);
             // Arrowhead — head only, base open to vertical shaft
             translate([cx, arrow_up_y, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             intersection() {
                 difference() {
                     arrow_2d();
@@ -434,7 +434,7 @@ module curved_arrow_fill() {
         }
         // Leftward arrow
         translate([arrow_lf_x, arrow_lf_y, 0])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         rotate([0, 0, 90])
         difference() {
             arrow_2d();
@@ -447,7 +447,7 @@ module curved_arrow_cutout() {
     if (!double_speed) {
         // Vertical segment cutout
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve - 0.001, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         difference() {
             square([arrow_shaft_w, y_merge - (plate_d/2 + r_curve) + 0.001]);
             translate([arrow_outline, 0])
@@ -455,7 +455,7 @@ module curved_arrow_cutout() {
         }
         // Arc shaft cutout
         translate([cx_r, plate_d/2 + r_curve, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         intersection() {
             difference() {
                 difference() {
@@ -473,7 +473,7 @@ module curved_arrow_cutout() {
         }
         // Horizontal segment cutout
         translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         difference() {
             square([h_straight, arrow_shaft_w]);
             translate([0, arrow_outline])
@@ -481,10 +481,10 @@ module curved_arrow_cutout() {
         }
         // End cap cutout
         translate([cx_r + h_straight - arrow_outline, plate_d/2 - arrow_shaft_w/2, -0.001])
-            cube([arrow_outline, arrow_shaft_w, plate_h + 0.002]);
+            cube([arrow_outline, arrow_shaft_w, pattern_h + 0.002]);
         // Arrowhead cutout — clipped from full arrow_2d so base is open to shaft
         translate([cx, arrow_y, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         intersection() {
             difference() {
                 arrow_2d();
@@ -498,7 +498,7 @@ module curved_arrow_cutout() {
         union() {
             // Vertical segment cutout
             translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve - 0.001, -0.001])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             difference() {
                 square([arrow_shaft_w, y_merge_up - (plate_d/2 + r_curve) + 0.001]);
                 translate([arrow_outline, 0])
@@ -508,7 +508,7 @@ module curved_arrow_cutout() {
             arc_stop = 225;
             arc_big = 10;
             translate([cx_r, plate_d/2 + r_curve, -0.001])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             intersection() {
                 difference() {
                     difference() {
@@ -525,7 +525,7 @@ module curved_arrow_cutout() {
             }
             // Horizontal segment cutout
             translate([cx_r, plate_d/2 - arrow_shaft_w/2, -0.001])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             difference() {
                 square([h_straight, arrow_shaft_w]);
                 translate([0, arrow_outline])
@@ -535,11 +535,11 @@ module curved_arrow_cutout() {
             translate([cx_r, plate_d/2 + r_curve, -0.001])
             rotate([0, 0, arc_stop])
             translate([r_curve - arrow_shaft_w/2, -arrow_outline/2, 0])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             square([arrow_shaft_w, arrow_outline]);
             // Arrowhead cutout (head only)
             translate([cx, arrow_up_y, -0.001])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             intersection() {
                 difference() {
                     arrow_2d();
@@ -551,7 +551,7 @@ module curved_arrow_cutout() {
         }
         // Cut leftward arrow outline from belt
         translate([arrow_lf_x, arrow_lf_y, -0.001])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         rotate([0, 0, 90])
         difference() {
             arrow_2d();
@@ -564,8 +564,8 @@ module arrow() {
     color(arrow_color)
     union() {
         if (straight)   straight_arrow_fill();
-        if (right_turn) curved_arrow_fill();
-        if (left_turn)  mirrored() curved_arrow_fill();
+        if (right_turn) mirrored() curved_arrow_fill();
+        if (left_turn)  curved_arrow_fill();
     }
 }
 
@@ -573,23 +573,23 @@ module arrow() {
 
 module straight_belt_base() {
     translate([(plate_w - belt_w) / 2, 0, 0])
-        cube([belt_w, plate_d, plate_h]);
+        cube([belt_w, plate_d, pattern_h]);
 }
 
 module curved_belt_base() {
     translate([cx_r, plate_d/2 - belt_half, 0])
-        cube([plate_w - cx_r, belt_w, plate_h]);
+        cube([plate_w - cx_r, belt_w, pattern_h]);
     translate([cx_r, plate_d/2 + r_curve, 0])
-    linear_extrude(plate_h)
+    linear_extrude(pattern_h)
     intersection() {
         circle(r = r_outer, $fn = 120);
         translate([-r_outer, -r_outer]) square([r_outer, r_outer]);
     }
     translate([b_L, plate_d/2 + r_curve, 0])
-        cube([belt_w, plate_d/2 - r_curve, plate_h]);
+        cube([belt_w, plate_d/2 - r_curve, pattern_h]);
     // Curved corner — bottom-left of the top-right uncovered square
     translate([b_R, plate_d/2 + belt_half, 0])
-    linear_extrude(plate_h)
+    linear_extrude(pattern_h)
     difference() {
         square([b_L/2, b_L/2]);
         translate([b_L/2, b_L/2])
@@ -602,13 +602,13 @@ module belt() {
     difference() {
         union() {
             if (straight)   straight_belt_base();
-            if (right_turn) curved_belt_base();
-            if (left_turn)  mirrored() curved_belt_base();
+            if (right_turn) mirrored() curved_belt_base();
+            if (left_turn)  curved_belt_base();
         }
         union() {
             if (straight)   straight_arrow_cutout();
-            if (right_turn) curved_arrow_cutout();
-            if (left_turn)  mirrored() curved_arrow_cutout();
+            if (right_turn) mirrored() curved_arrow_cutout();
+            if (left_turn)  curved_arrow_cutout();
         }
     }
 }
