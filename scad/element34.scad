@@ -1,10 +1,15 @@
 // element34.scad — Electrical Hazard Panel
 // Two yellow/black lightning-bolt panels flanked by red-tipped toggle levers.
 // Units: inches
+//
+// Panels, bolts, rods, and balls all sit in the top pattern_h-thick slice of
+// the plate — z from (plate_h - pattern_h) to plate_h — like gear()/
+// gear_bore() in sub_innergears.scad, rather than spanning the plate's full
+// thickness from z=0.
 
 include <sub_base_plate.scad>
 
-plate_colors = ["yellow", undef, undef, undef, undef, "yellow"];
+plate_colors = ["orange", undef, undef, undef, undef, "orange"];
 
 // Panel pair — centered as a group, side by side
 panel_w   = 0.70;
@@ -71,46 +76,46 @@ module toggle_rod_2d() {
 
 module panel_holes() {
     for (cx = panel_cx)
-        translate([cx, panel_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
+        translate([cx, panel_cy, plate_h - pattern_h - 0.001])
+        linear_extrude(pattern_h + 0.002)
         rounded_rect_2d(panel_w, panel_h, outer_r);
 }
 
 module panels_black() {
     color("black")
     for (cx = panel_cx)
-        translate([cx, panel_cy, 0])
-        linear_extrude(plate_h)
+        translate([cx, panel_cy, plate_h - pattern_h])
+        linear_extrude(pattern_h)
         rounded_rect_2d(panel_w, panel_h, outer_r);
 }
 
 module yellow_holes() {
     for (cx = panel_cx)
-        translate([cx, panel_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
+        translate([cx, panel_cy, plate_h - pattern_h - 0.001])
+        linear_extrude(pattern_h + 0.002)
         rounded_rect_2d(yellow_w, yellow_h, inner_r);
 }
 
 module panels_yellow() {
-    color("yellow")
+    color("orange")
     for (cx = panel_cx)
-        translate([cx, panel_cy, 0])
-        linear_extrude(plate_h)
+        translate([cx, panel_cy, plate_h - pattern_h])
+        linear_extrude(pattern_h)
         rounded_rect_2d(yellow_w, yellow_h, inner_r);
 }
 
 module bolt_holes() {
     for (cx = panel_cx)
-        translate([cx, panel_cy, -0.001])
-        linear_extrude(plate_h + 0.002)
+        translate([cx, panel_cy, plate_h - pattern_h - 0.001])
+        linear_extrude(pattern_h + 0.002)
         bolt_2d(bolt_w, bolt_h);
 }
 
 module bolts_black() {
     color("black")
     for (cx = panel_cx)
-        translate([cx, panel_cy, 0])
-        linear_extrude(plate_h)
+        translate([cx, panel_cy, plate_h - pattern_h])
+        linear_extrude(pattern_h)
         bolt_2d(bolt_w, bolt_h);
 }
 
@@ -118,39 +123,39 @@ module bolts_black() {
 
 module rod_holes() {
     for (t = toggle_pos)
-        translate([t[0], toggle_cy, -0.001])
+        translate([t[0], toggle_cy, plate_h - pattern_h - 0.001])
         rotate([0, 0, t[1] * toggle_tilt])
-        linear_extrude(plate_h + 0.002)
+        linear_extrude(pattern_h + 0.002)
         toggle_rod_2d();
 }
 
 module rods_gray() {
     color("lightgray")
     for (t = toggle_pos)
-        translate([t[0], toggle_cy, 0])
+        translate([t[0], toggle_cy, plate_h - pattern_h])
         rotate([0, 0, t[1] * toggle_tilt])
-        linear_extrude(plate_h)
+        linear_extrude(pattern_h)
         toggle_rod_2d();
 }
 
 module ball_holes() {
     for (t = toggle_pos)
-        translate([t[0], toggle_cy, -0.001])
+        translate([t[0], toggle_cy, plate_h - pattern_h - 0.001])
         rotate([0, 0, t[1] * toggle_tilt])
         for (y = [toggle_len / 2, -toggle_len / 2])
             translate([0, y, 0])
-            linear_extrude(plate_h + 0.002)
+            linear_extrude(pattern_h + 0.002)
             circle(r = toggle_ball_r, $fn = 24);
 }
 
 module balls_red() {
     color("red")
     for (t = toggle_pos)
-        translate([t[0], toggle_cy, 0])
+        translate([t[0], toggle_cy, plate_h - pattern_h])
         rotate([0, 0, t[1] * toggle_tilt])
         for (y = [toggle_len / 2, -toggle_len / 2])
             translate([0, y, 0])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             circle(r = toggle_ball_r, $fn = 24);
 }
 

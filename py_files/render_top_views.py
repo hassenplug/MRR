@@ -10,8 +10,9 @@ import os
 import subprocess
 import sys
 
-#OPENSCAD_EXE = r"C:\Program Files (x86)\OpenSCAD\openscad.com"
-OPENSCAD_EXE = r"C:\Program Files\OpenSCAD\openscad.com"
+#OPENSCAD_EXE = r"C:\Program Files\OpenSCAD\openscad.com"
+OPENSCAD_EXE = r"C:\Program Files (x86)\OpenSCAD\openscad.com"
+
 IMG_SIZE = "300,300"
 CAMERA_T = "1.435,1.435,0,0,0,0,7.55"
 CAMERA_B = "1.435,1.435,0,0,180,0,7.55"
@@ -20,9 +21,9 @@ CAMERA_R = "1.435,1.435,0,90,0,270,7.55"
 
 VIEWS = [
     ("top", CAMERA_T),
-    ("bottom", CAMERA_B),
-    ("left", CAMERA_L),
-    ("right", CAMERA_R),
+#    ("bottom", CAMERA_B),
+#    ("left", CAMERA_L),
+#    ("right", CAMERA_R),
 ]
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))

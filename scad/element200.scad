@@ -3,7 +3,7 @@
 // Wall sits over the black frame border (+Y), spans full 3" width, rises 1/2"
 // above the tile surface, and wraps brick texture on all four exposed faces.
 // Units: inches
-plate_colors = ["red", undef, undef, undef, undef, "red"];
+plate_colors = ["red", "red", undef, undef, "red", "red"];
 
 include <sub_base_plate.scad>
 

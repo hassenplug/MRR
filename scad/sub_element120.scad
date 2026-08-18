@@ -2,14 +2,20 @@
 // Requires caller to define: plate_colors (6-slot frame color array),
 // label_num (letter painted at the tile center)
 // Units: inches
+//
+// Dashes, arrow, and label all sit in the top pattern_h-thick slice of the
+// plate — z from (plate_h - pattern_h) to plate_h — like gear()/gear_bore()
+// in sub_innergears.scad, rather than spanning the plate's full thickness.
 
 include <sub_base_plate.scad>
 include <sub_innergears.scad>
 
+gear_color = "purple";
+
 cx = plate_w / 2;
 cy = plate_d / 2;
 
-// Orange dashed arc inside the ring, lower arc (portal intake indicator)
+// purple dashed arc inside the ring, lower arc (portal intake indicator)
 dash_r     = 0.73;
 dash_count = 8;
 dash_a1    = 205;
@@ -17,7 +23,7 @@ dash_a2    = 335;
 dash_w     = 0.074;
 dash_len   = 0.140;
 
-// Orange upward arrow — bottom unchanged, tip restored to original position
+// purple upward arrow — bottom unchanged, tip restored to original position
 arr_stem_w  = 0.40;
 arr_stem_y1 = cy - 0.44;
 arr_stem_y2 = cy + 0.20;
@@ -32,23 +38,23 @@ module dash_holes() {
         angle = dash_a1 + span * i / (dash_count - 1);
         dx = cx + dash_r * cos(angle);
         dy = cy + dash_r * sin(angle);
-        translate([dx, dy, -1])
+        translate([dx, dy, plate_h - pattern_h - 1])
         rotate([0, 0, angle + 90])
-        linear_extrude(plate_h + 2)
+        linear_extrude(pattern_h + 2)
         square([dash_w, dash_len], center = true);
     }
 }
 
 module white_dashes() {
     span = dash_a2 - dash_a1;
-    color("orange") {
+    color("purple") {
         for (i = [0 : dash_count - 1]) {
             angle = dash_a1 + span * i / (dash_count - 1);
             dx = cx + dash_r * cos(angle);
             dy = cy + dash_r * sin(angle);
-            translate([dx, dy, 0])
+            translate([dx, dy, plate_h - pattern_h])
             rotate([0, 0, angle + 90])
-            linear_extrude(plate_h)
+            linear_extrude(pattern_h)
             square([dash_w, dash_len], center = true);
         }
     }
@@ -57,8 +63,8 @@ module white_dashes() {
 // ── Arrow hole & arrow ────────────────────────────────────────────────────────
 
 module arrow_holes() {
-    translate([0, 0, -1])
-    linear_extrude(plate_h + 2)
+    translate([0, 0, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     union() {
         translate([cx - arr_stem_w / 2, arr_stem_y1])
             square([arr_stem_w, arr_stem_y2 - arr_stem_y1]);
@@ -72,8 +78,9 @@ module arrow_holes() {
 }
 
 module white_arrow() {
-    color("orange")
-    linear_extrude(plate_h)
+    color("purple")
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     union() {
         translate([cx - arr_stem_w / 2, arr_stem_y1])
             square([arr_stem_w, arr_stem_y2 - arr_stem_y1]);
@@ -89,16 +96,16 @@ module white_arrow() {
 // ── Label hole → label ────────────────────────────────────────────────────────
 
 module label_holes(num) {
-    translate([cx, cy, -1])
-    linear_extrude(plate_h + 2)
+    translate([cx, cy, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     text(num, size = .3, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
 
 module label(num) {
     color("white")
-    translate([cx, cy, 0])
-    linear_extrude(plate_h)
+    translate([cx, cy, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     text(num, size = .3, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
@@ -119,7 +126,7 @@ union() {                                           // step 4: add label
                                 plate(plate_colors);        // step 0: plate (frame + rivets)
                                 gear_holes();                // cut gear holes
                             }
-                            gear("orange");                  // fill with gear
+                            gear(gear_color);                  // fill with gear
                         }
                         gear_bore_holes();                   // cut gear bore holes
                     }

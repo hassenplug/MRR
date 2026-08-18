@@ -1,6 +1,13 @@
 // sub_belts.scad — shared roller/belt/arrow geometry for element10, 11, 12, 20, 21, 22
-// Requires caller to define: plate_w, plate_d, pattern_h (see sub_base_plate.scad)
+// Requires caller to define: plate_w, plate_d, plate_h, pattern_h (see sub_base_plate.scad)
 // Units: inches
+//
+// Rollers, belt, and arrow all sit in the top pattern_h-thick slice of the
+// plate — z from (plate_h - pattern_h) to plate_h — rather than spanning the
+// plate's full thickness from z=0. roller_slots()/belt_cutout() (which carve
+// the matching recess out of the plate) live in the same z-slice so the cut
+// and the colored insert stay aligned; the bottom (plate_h - pattern_h) of
+// the plate is left solid.
 //
 // Dispatch flags the caller must define before including this file:
 //   straight      — true to also draw the straight-through belt
@@ -88,11 +95,13 @@ module mirrored() {
 // ── Belt cutout ───────────────────────────────────────────────────────────────
 
 module straight_belt_cutout() {
+    translate([0, 0, plate_h - pattern_h])
     translate([(plate_w - belt_w) / 2, -0.001, -0.001])
         cube([belt_w, plate_d + 0.002, pattern_h + 0.002]);
 }
 
 module curved_belt_cutout() {
+    translate([0, 0, plate_h - pattern_h]) {
     // Straight vertical strip (top)
     translate([(plate_w - belt_w) / 2, plate_d/2 + r_curve - 0.001, -0.001])
         cube([belt_w, plate_d/2 - r_curve + 0.002, pattern_h + 0.002]);
@@ -114,17 +123,19 @@ module curved_belt_cutout() {
         translate([b_L/2, b_L/2])
             circle(r = b_L/2, $fn = 120);
     }
+    }
 }
 
 module belt_cutout() {
     if (straight)   straight_belt_cutout();
-    if (right_turn) mirrored() curved_belt_cutout();
-    if (left_turn)  curved_belt_cutout();
+    if (right_turn) curved_belt_cutout();
+    if (left_turn)  mirrored() curved_belt_cutout();
 }
 
 // ── Roller slots (cut into plate) ──────────────────────────────────────────────
 
 module straight_roller_slots() {
+    translate([0, 0, plate_h - pattern_h])
     for (i = [0:roller_count - 1]) {
         cy = roller_inset + i * roller_y_step;
         translate([0, 0, -0.001])
@@ -138,6 +149,7 @@ module straight_roller_slots() {
 }
 
 module curved_roller_slots() {
+    translate([0, 0, plate_h - pattern_h]) {
     // a. Horizontal bars — top-section only, right-clipped; i=12 full-width
     for (i = [0:roller_count - 1]) {
         if (roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
@@ -188,17 +200,19 @@ module curved_roller_slots() {
         translate([nub, 0, 0])
             cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
     }
+    }
 }
 
 module roller_slots() {
     if (straight)   straight_roller_slots();
-    if (right_turn) mirrored() curved_roller_slots();
-    if (left_turn)  curved_roller_slots();
+    if (right_turn) curved_roller_slots();
+    if (left_turn)  mirrored() curved_roller_slots();
 }
 
 // ── Rollers (filled, colored) ───────────────────────────────────────────────────
 
 module straight_roller_bars() {
+    translate([0, 0, plate_h - pattern_h])
     for (i = [0:roller_count - 1]) {
         cy = roller_inset + i * roller_y_step;
         hull() {
@@ -211,6 +225,7 @@ module straight_roller_bars() {
 }
 
 module curved_roller_bars() {
+    translate([0, 0, plate_h - pattern_h]) {
     // a. Horizontal bars
     for (i = [0:roller_count - 1]) {
         if (roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
@@ -257,6 +272,7 @@ module curved_roller_bars() {
         translate([nub, 0, 0])
             cylinder(h = pattern_h, r = roller_r, $fn = 20);
     }
+    }
 }
 
 module rollers() {
@@ -264,8 +280,8 @@ module rollers() {
     difference() {
         union() {
             if (straight)   straight_roller_bars();
-            if (right_turn) mirrored() curved_roller_bars();
-            if (left_turn)  curved_roller_bars();
+            if (right_turn) curved_roller_bars();
+            if (left_turn)  mirrored() curved_roller_bars();
         }
         belt_cutout();
     }
@@ -286,6 +302,7 @@ module arrow_2d() {
 }
 
 module straight_arrow_fill() {
+    translate([0, 0, plate_h - pattern_h])
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, 0])
         linear_extrude(pattern_h)
@@ -305,6 +322,7 @@ module straight_arrow_fill() {
 }
 
 module straight_arrow_cutout() {
+    translate([0, 0, plate_h - pattern_h])
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, -0.001])
         linear_extrude(pattern_h + 0.002)
@@ -324,6 +342,7 @@ module straight_arrow_cutout() {
 }
 
 module curved_arrow_fill() {
+    translate([0, 0, plate_h - pattern_h])
     if (!double_speed) {
         // Vertical segment: cx, from arc center up to arrowhead base
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve, 0])
@@ -444,6 +463,7 @@ module curved_arrow_fill() {
 }
 
 module curved_arrow_cutout() {
+    translate([0, 0, plate_h - pattern_h])
     if (!double_speed) {
         // Vertical segment cutout
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve - 0.001, -0.001])
@@ -564,19 +584,21 @@ module arrow() {
     color(arrow_color)
     union() {
         if (straight)   straight_arrow_fill();
-        if (right_turn) mirrored() curved_arrow_fill();
-        if (left_turn)  curved_arrow_fill();
+        if (right_turn) curved_arrow_fill();
+        if (left_turn)  mirrored() curved_arrow_fill();
     }
 }
 
 // ── Belt (solid, colored, arrow-shaped cutout) ─────────────────────────────────
 
 module straight_belt_base() {
+    translate([0, 0, plate_h - pattern_h])
     translate([(plate_w - belt_w) / 2, 0, 0])
         cube([belt_w, plate_d, pattern_h]);
 }
 
 module curved_belt_base() {
+    translate([0, 0, plate_h - pattern_h]) {
     translate([cx_r, plate_d/2 - belt_half, 0])
         cube([plate_w - cx_r, belt_w, pattern_h]);
     translate([cx_r, plate_d/2 + r_curve, 0])
@@ -595,6 +617,7 @@ module curved_belt_base() {
         translate([b_L/2, b_L/2])
             circle(r = b_L/2, $fn = 120);
     }
+    }
 }
 
 module belt() {
@@ -602,13 +625,13 @@ module belt() {
     difference() {
         union() {
             if (straight)   straight_belt_base();
-            if (right_turn) mirrored() curved_belt_base();
-            if (left_turn)  curved_belt_base();
+            if (right_turn) curved_belt_base();
+            if (left_turn)  mirrored() curved_belt_base();
         }
         union() {
             if (straight)   straight_arrow_cutout();
-            if (right_turn) mirrored() curved_arrow_cutout();
-            if (left_turn)  curved_arrow_cutout();
+            if (right_turn) curved_arrow_cutout();
+            if (left_turn)  mirrored() curved_arrow_cutout();
         }
     }
 }

@@ -3,7 +3,7 @@
 // letter "C" marks this variant.
 // Units: inches
 
-plate_colors = ["orange", "orange", undef, "orange", "orange", "orange"];
+plate_colors = ["purple", "purple", undef, "purple", "purple", "purple"];
 label_num    = "C";
 
 include <sub_element120.scad>

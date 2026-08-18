@@ -6,11 +6,18 @@ All parts are sub-volumes of a single parent object so Bambu keeps them in the s
 coordinate system (no independent drop-to-plate per color).
 
 Usage:
-    py -3.12 py_files/scad_to_3mf.py <input.scad> [output.3mf]
+    py -3.12 py_files/scad_to_3mf.py <input.scad> [output.3mf] [--no-flip]
     py -3.12 py_files/scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>
 
 Two-file mode: bottom is rendered at z=0, its height is measured, then top geometry
-is shifted up by that amount so the two layers sit flush against each other.
+is shifted up by that amount so the two layers sit flush against each other. The
+bottom piece is always flipped face down so its own top-surface pattern ends up on
+the bottom-facing side of the combined stack instead of sandwiched in the middle.
+
+Single-file mode: the lone file is treated the same as a bottom piece and flipped
+face down by default, since single-file runs are typically used to print just the
+bottom half of a two-piece tile on its own. Pass --no-flip to keep it face up
+(pattern visible from above, unflipped) instead.
 """
 
 import os
@@ -23,9 +30,10 @@ import tempfile
 import sys
 from pathlib import Path
 
-OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
-#OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
+#OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
+OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
 QUIET = False
+NO_FLIP = False
 
 
 def vprint(*args, **kwargs):
@@ -386,16 +394,19 @@ def render_colors(scad_path, tmpdir, prefix, z_offset=0.0):
 
 
 def main():
-    global QUIET
+    global QUIET, NO_FLIP
     if "--quiet" in sys.argv:
         QUIET = True
         sys.argv = [a for a in sys.argv if a != "--quiet"]
+    if "--no-flip" in sys.argv:
+        NO_FLIP = True
+        sys.argv = [a for a in sys.argv if a != "--no-flip"]
 
     two_file_mode = len(sys.argv) == 4
 
     if len(sys.argv) < 2 or len(sys.argv) > 4:
         print("Usage:")
-        print("  py_files/scad_to_3mf.py <input.scad> [output.3mf]")
+        print("  py_files/scad_to_3mf.py <input.scad> [output.3mf] [--no-flip]")
         print("  py_files/scad_to_3mf.py <top.scad> <bottom.scad> <output.3mf>")
         sys.exit(1)
 
@@ -424,8 +435,10 @@ def main():
             top_parts, _ = render_colors(top_path, tmpdir, "top", z_offset=bottom_height)
             parts.extend(top_parts)
         else:
-            vprint("--- Rendering ---")
+            vprint("--- Rendering ---" if NO_FLIP else "--- Rendering (flipped to face down) ---")
             file_parts, _ = render_colors(scad_path, tmpdir, "")
+            if not NO_FLIP:
+                file_parts = flip_bottom(file_parts)
             # strip the leading underscore from the prefix-less labels
             parts.extend((name.lstrip("_"), tris) for name, tris in file_parts)
 

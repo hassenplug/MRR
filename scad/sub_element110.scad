@@ -6,19 +6,22 @@
 include <sub_base_plate.scad>
 include <sub_innergears.scad>
 
+gear_color = "darkgreen";
+
 // ── Label hole → label ────────────────────────────────────────────────────────
+// Sits in the top pattern_h-thick slice of the plate, like gear()/gear_bore().
 
 module label_holes(num) {
-    translate([plate_w / 2, plate_d / 2, -0.001])
-    linear_extrude(plate_h + 0.002)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 0.001])
+    linear_extrude(pattern_h + 0.002)
     text(str(num), size = 1.1, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
 
 module label(num, clr) {
     color(clr)
-    translate([plate_w / 2, plate_d / 2, 0])
-    linear_extrude(plate_h)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     text(str(num), size = 1.1, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");
 }
@@ -37,7 +40,7 @@ union() {                                           // step 4: add label
                         plate(plate_colors);   // step 1: plate (frame + rivets)
                         gear_holes();
                     }
-                    gear("darkgreen");
+                    gear(gear_color);
                 }
                 gear_bore_holes();
             }

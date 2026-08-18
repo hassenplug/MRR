@@ -2,9 +2,16 @@
 // Requires caller to define: plate_colors (6-slot frame color array),
 // label_num (number painted on the flag)
 // Units: inches
+//
+// The flag outline, pole, flag, and label all sit in the top pattern_h-thick
+// slice of the plate — z from (plate_h - pattern_h) to plate_h — like
+// gear()/gear_bore() in sub_innergears.scad, rather than spanning the
+// plate's full thickness from z=0.
 
 include <sub_base_plate.scad>
 include <sub_innergears.scad>
+
+gear_color = "darkred";
 
 // Pole — same inset_x gap from right rivet column as rivets are from edge
 pole_r   = 0.04;
@@ -39,8 +46,8 @@ module flag_label_2d(label) {
 // ── Flag outline hole & flag outline ─────────────────────────────────────────
 
 module flag_outline_holes() {
-    translate([0, 0, -1])
-    linear_extrude(plate_h + 2)
+    translate([0, 0, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     difference() {
         offset(delta = outline_t) flag_pennant_2d();
         flag_pennant_2d();
@@ -49,7 +56,8 @@ module flag_outline_holes() {
 
 module flag_outline() {
     color("darkgray")
-    linear_extrude(plate_h)
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     difference() {
         offset(delta = outline_t) flag_pennant_2d();
         flag_pennant_2d();
@@ -59,39 +67,41 @@ module flag_outline() {
 // ── Flag pole hole, flag hole → flag pole, flag ───────────────────────────────
 
 module flag_pole_holes() {
-    translate([pole_cx - pole_r, pole_y1, -1])
-    cube([pole_r * 2, pole_y2 - pole_y1, plate_h + 2]);
+    translate([pole_cx - pole_r, pole_y1, plate_h - pattern_h - 1])
+    cube([pole_r * 2, pole_y2 - pole_y1, pattern_h + 2]);
 }
 
 module flag_pole() {
     color("red")
-    translate([pole_cx - pole_r, pole_y1, 0])
-    cube([pole_r * 2, pole_y2 - pole_y1, plate_h]);
+    translate([pole_cx - pole_r, pole_y1, plate_h - pattern_h])
+    cube([pole_r * 2, pole_y2 - pole_y1, pattern_h]);
 }
 
 module flag_holes() {
-    translate([0, 0, -1])
-    linear_extrude(plate_h + 2)
+    translate([0, 0, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     flag_pennant_2d();
 }
 
 module flag() {
     color("red")
-    linear_extrude(plate_h)
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     flag_pennant_2d();
 }
 
 // ── Label hole → label ────────────────────────────────────────────────────────
 
 module label_holes(label) {
-    translate([0, 0, -1])
-    linear_extrude(plate_h + 2)
+    translate([0, 0, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     flag_label_2d(label);
 }
 
 module flag_label(label) {
     color("white")
-    linear_extrude(plate_h)
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     flag_label_2d(label);
 }
 
@@ -113,7 +123,7 @@ union() {                                           // step 5: add label
                                         plate(plate_colors);   // step 0: plate (frame + rivets)
                                         gear_holes();       // cut gear holes
                                     }
-                                    gear("darkred");        // fill with gear
+                                    gear(gear_color);        // fill with gear
                                 }
                                 gear_bore_holes();          // cut gear bore hole
                             }

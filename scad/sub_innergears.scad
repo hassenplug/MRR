@@ -1,5 +1,5 @@
 // sub_innergears.scad — shared inner gear ring (ring with inward-pointing teeth)
-// Requires caller to define: plate_w, plate_d, plate_h (see sub_base_plate.scad)
+// Requires caller to define: plate_w, plate_d, plate_h, pattern_h (see sub_base_plate.scad)
 // Units: inches
 //
 // Usage — must be `include`, positioned after sub_base_plate.scad and before any
@@ -11,6 +11,11 @@
 //
 // gear(c) and gear_bore(c) take a color string so tiles with different gear
 // colors (e.g. darkred vs darkgreen) can share this same file.
+//
+// gear(c)/gear_bore(c) sit in the top pattern_h-thick slice of the plate — z
+// from (plate_h - pattern_h) to plate_h — rather than spanning the plate's
+// full thickness from z=0. gear_holes()/gear_bore_holes() (which carve the
+// matching recess out of the plate) live in the same z-slice.
 
 gear_r_tip  = 1.18;   // outer edge of ring (plain)
 gear_r_root = 1.00;   // ring inner edge; teeth root here
@@ -48,8 +53,8 @@ module bore_2d() {
 // ── Gear holes & gear ────────────────────────────────────────────────────────
 
 module gear_holes() {
-    translate([plate_w / 2, plate_d / 2, -1])
-    linear_extrude(plate_h + 2)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     difference() {
         gear_2d();
         bore_2d();
@@ -58,22 +63,22 @@ module gear_holes() {
 
 module gear(c) {
     color(c)
-    translate([plate_w / 2, plate_d / 2, 0])
-    linear_extrude(plate_h)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     difference() { gear_2d(); bore_2d(); }
 }
 
 // ── Gear bore hole & gear bore ────────────────────────────────────────────────
 
 module gear_bore_holes() {
-    translate([plate_w / 2, plate_d / 2, -1])
-    linear_extrude(plate_h + 2)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 1])
+    linear_extrude(pattern_h + 2)
     bore_2d();
 }
 
 module gear_bore(c) {
     color(c)
-    translate([plate_w / 2, plate_d / 2, 0])
-    linear_extrude(plate_h)
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h])
+    linear_extrude(pattern_h)
     offset(delta = -0.001) bore_2d();
 }
