@@ -46,7 +46,7 @@ module flag_label_2d(label) {
 // ── Flag outline hole & flag outline ─────────────────────────────────────────
 
 module flag_outline_holes() {
-    translate([0, 0, plate_h - pattern_h - 1])
+    translate([0, 0, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     difference() {
         offset(delta = outline_t) flag_pennant_2d();
@@ -67,7 +67,7 @@ module flag_outline() {
 // ── Flag pole hole, flag hole → flag pole, flag ───────────────────────────────
 
 module flag_pole_holes() {
-    translate([pole_cx - pole_r, pole_y1, plate_h - pattern_h - 1])
+    translate([pole_cx - pole_r, pole_y1, plate_h - pattern_h - 0.001])
     cube([pole_r * 2, pole_y2 - pole_y1, pattern_h + 2]);
 }
 
@@ -78,7 +78,7 @@ module flag_pole() {
 }
 
 module flag_holes() {
-    translate([0, 0, plate_h - pattern_h - 1])
+    translate([0, 0, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     flag_pennant_2d();
 }
@@ -93,7 +93,7 @@ module flag() {
 // ── Label hole → label ────────────────────────────────────────────────────────
 
 module label_holes(label) {
-    translate([0, 0, plate_h - pattern_h - 1])
+    translate([0, 0, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     flag_label_2d(label);
 }

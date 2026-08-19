@@ -38,7 +38,7 @@ module dash_holes() {
         angle = dash_a1 + span * i / (dash_count - 1);
         dx = cx + dash_r * cos(angle);
         dy = cy + dash_r * sin(angle);
-        translate([dx, dy, plate_h - pattern_h - 1])
+        translate([dx, dy, plate_h - pattern_h - 0.001])
         rotate([0, 0, angle + 90])
         linear_extrude(pattern_h + 2)
         square([dash_w, dash_len], center = true);
@@ -63,7 +63,7 @@ module white_dashes() {
 // ── Arrow hole & arrow ────────────────────────────────────────────────────────
 
 module arrow_holes() {
-    translate([0, 0, plate_h - pattern_h - 1])
+    translate([0, 0, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     union() {
         translate([cx - arr_stem_w / 2, arr_stem_y1])
@@ -96,7 +96,7 @@ module white_arrow() {
 // ── Label hole → label ────────────────────────────────────────────────────────
 
 module label_holes(num) {
-    translate([cx, cy, plate_h - pattern_h - 1])
+    translate([cx, cy, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     text(num, size = .3, halign = "center", valign = "center",
          font = "Liberation Sans:style=Bold");

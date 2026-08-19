@@ -53,7 +53,7 @@ module bore_2d() {
 // ── Gear holes & gear ────────────────────────────────────────────────────────
 
 module gear_holes() {
-    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 1])
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     difference() {
         gear_2d();
@@ -71,7 +71,7 @@ module gear(c) {
 // ── Gear bore hole & gear bore ────────────────────────────────────────────────
 
 module gear_bore_holes() {
-    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 1])
+    translate([plate_w / 2, plate_d / 2, plate_h - pattern_h - 0.001])
     linear_extrude(pattern_h + 2)
     bore_2d();
 }

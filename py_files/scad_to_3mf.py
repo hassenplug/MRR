@@ -265,14 +265,26 @@ def build_3mf(parts, output_path):
     """
 
     def mesh_object_xml(obj_id, color_name, triangles):
-        rows_v = []
+        # STL triangles each carry a private vertex triplet with no index sharing,
+        # so writing them out verbatim makes every edge look non-manifold to Bambu
+        # Studio even though coordinates coincide. Weld by rounded position first.
+        vertex_index = {}
+        vertices = []
+
+        def vidx(v):
+            key = (round(v[0], 6), round(v[1], 6), round(v[2], 6))
+            idx = vertex_index.get(key)
+            if idx is None:
+                idx = len(vertices)
+                vertex_index[key] = idx
+                vertices.append(key)
+            return idx
+
         rows_t = []
-        for i, (v0, v1, v2) in enumerate(triangles):
-            base = i * 3
-            rows_v.append(f'          <vertex x="{v0[0]:.6f}" y="{v0[1]:.6f}" z="{v0[2]:.6f}"/>')
-            rows_v.append(f'          <vertex x="{v1[0]:.6f}" y="{v1[1]:.6f}" z="{v1[2]:.6f}"/>')
-            rows_v.append(f'          <vertex x="{v2[0]:.6f}" y="{v2[1]:.6f}" z="{v2[2]:.6f}"/>')
-            rows_t.append(f'          <triangle v1="{base}" v2="{base+1}" v3="{base+2}"/>')
+        for v0, v1, v2 in triangles:
+            i0, i1, i2 = vidx(v0), vidx(v1), vidx(v2)
+            rows_t.append(f'          <triangle v1="{i0}" v2="{i1}" v3="{i2}"/>')
+        rows_v = [f'          <vertex x="{x:.6f}" y="{y:.6f}" z="{z:.6f}"/>' for x, y, z in vertices]
         return (
             f'    <object id="{obj_id}" type="model" name="{color_name}">\n'
             f'      <mesh>\n'

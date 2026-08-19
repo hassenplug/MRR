@@ -10,6 +10,7 @@ Usage:
     py -3.12 py_files/generate_3mf.py [--quiet]
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -49,7 +50,11 @@ def main():
 
     for scad_path in scad_files:
         stem    = scad_path.stem
-        out_3mf = OUT_DIR / f"{stem}.3mf"
+        # scad_to_3mf.py strips "-u"/"-U" (its "already upright" marker) from the
+        # 3mf filename it writes, so match that here or the exists() check below
+        # would look for a file that never gets created.
+        out_stem = re.sub(r'-u', '', stem, flags=re.IGNORECASE)
+        out_3mf  = OUT_DIR / f"{out_stem}.3mf"
 
         if out_3mf.exists():
             if not quiet:
