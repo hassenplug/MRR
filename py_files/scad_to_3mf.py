@@ -31,8 +31,8 @@ import tempfile
 import sys
 from pathlib import Path
 
-OPENSCAD = "C:/Program Files/OpenSCAD/openscad.exe"
-#OPENSCAD = "C:/Program Files (x86)/OpenSCAD/openscad.exe"
+from openscad_config import OPENSCAD_EXE
+
 QUIET = False
 
 
@@ -172,7 +172,7 @@ def export_stl(scad_source, stl_path):
         tmp_scad = f.name
     try:
         result = subprocess.run(
-            [OPENSCAD, "--render", "-o", str(stl_path), tmp_scad],
+            [OPENSCAD_EXE, "--render", "-o", str(stl_path), tmp_scad],
             capture_output=True, text=True, timeout=300
         )
         if result.returncode != 0:
