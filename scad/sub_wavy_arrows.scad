@@ -217,7 +217,7 @@ module wavy_arrow_black_holes() {
 }
 
 module wavy_arrow_black_fill() {
-    color("black")
+    color(tilecolor)
     translate([0, 0, plate_h - pattern_h])
     linear_extrude(pattern_h)
     active_union_2d();

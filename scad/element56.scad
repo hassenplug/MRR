@@ -1,17 +1,18 @@
 // element56.scad — Water Straight Arrow
 // Units: inches
 
-straight    = true;
+straight    = false;
 right_turn  = false;
 left_turn   = false;
+
+tilecolor   = "blue";
+arrow_color = "black";
 
 include <sub_base_plate.scad>
 include <sub_wavy_arrows.scad>
 
-plate_colors = [undef, undef, "lightblue", "lightblue", undef, undef];
+plate_colors = [undef, undef, "blue", "blue", undef, undef];
 
-tilecolor   = "blue";
-arrow_color = "lightblue";
 
 union() {
     difference() {
