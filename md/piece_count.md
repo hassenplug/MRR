@@ -3,17 +3,17 @@
 | Element | Description | Image | Back= | Have | Need to Print | Total |
 | --- | --- | --- | --- | --- | --- | --- |
 | Element0 | Plain Metal Plate (Base) | ![Element0](../Images/Element0.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 0 |   |
-| Element10 | Straight Arrow (Green) | ![Element10](../Images/Element10.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 56 | 56 |
-| Element11 | Curved Arrow Right (Green) | ![Element11](../Images/Element11.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 32 | 32 |
-| Element12 | Curved Arrow Left (Green) | ![Element12](../Images/Element12.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 32 | 32 |
+| Element10 | Straight Arrow (Green) | ![Element10](../Images/Element10.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 56 | 56 |
+| Element11 | Curved Arrow Right (Green) | ![Element11](../Images/Element11.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 32 | 32 |
+| Element12 | Curved Arrow Left (Green) | ![Element12](../Images/Element12.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 32 | 32 |
 | Element11-12 | Curved Arrow Right (Green) | ![Element11](../Images/Element11.jpg) | ![Element12](../Images/Element12.jpg) | 0 | 32 | 32 |
 | Element12-11 | Curved Arrow Left (Green) | ![Element12](../Images/Element12.jpg) | ![Element11](../Images/Element11.jpg) | 0 | 32 | 32 |
 | Element13 | Arrow with Corner Brackets (Green) | ![Element13](../Images/Later/Element13.jpg) | ![Element14](../Images/Later/Element14.jpg) | 0 |   | 4 |
 | Element14 | Modular Arrow Component (Green) | ![Element14](../Images/Later/Element14.jpg) | ![Element13](../Images/Later/Element13.jpg) | 0 |   | 4 |
 | Element15 | Three-Way Arrow (Green) | ![Element15](../Images/Later/Element15.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   | 4 |
-| Element20 | Double Straight Arrow (Blue) | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 24 | 24 |
-| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | 8 |
-| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 8 | 8 |
+| Element20 | Double Straight Arrow (Blue) | ![Element20](../Images/Element20.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 24 | 24 |
+| Element21 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 8 | 8 |
+| Element22 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element0](../Images/Element0.jpg) | 3 | 8 | 8 |
 | Element21-22 | Curved Arrow Right (Blue) | ![Element21](../Images/Element21.jpg) | ![Element22](../Images/Element22.jpg) | 0 | 8 | 8 |
 | Element22-21 | Curved Arrow Left (Blue) | ![Element22](../Images/Element22.jpg) | ![Element21](../Images/Element21.jpg) | 0 | 8 | 8 |
 | Element25 | Textured Background (Green) | ![Element25](../Images/Element25.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   | 8 |
@@ -21,8 +21,8 @@
 | Element27 | Curved Arrow Right (Green Textured) | ![Element27](../Images/Element27.jpg) | ![Element28](../Images/Element28.jpg) | 0 |   | 2 |
 | Element28 | Curved Arrow Round Pivot (Green Textured) | ![Element28](../Images/Element28.jpg) | ![Element27](../Images/Element27.jpg) | 0 |   | 2 |
 | Element29 | Vortex (Green Textured) | ![Element29](../Images/Element29.jpg) | ![Element25](../Images/Element25.jpg) | 0 |   | 1 |
-| Element31 | Gear with Green Rotation Arrows | ![Element31](../Images/Element31.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 6 | 6 |
-| Element32 | Gear with Red Rotation Arrows | ![Element32](../Images/Element32.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 6 | 6 |
+| Element31 | Gear with Green Rotation Arrows | ![Element31](../Images/Element31.jpg) | ![Element0](../Images/Element0.jpg) | 5 | 6 | 6 |
+| Element32 | Gear with Red Rotation Arrows | ![Element32](../Images/Element32.jpg) | ![Element0](../Images/Element0.jpg) | 5 | 6 | 6 |
 | Element31-32 | Gear with Green Rotation Arrows | ![Element31](../Images/Element31.jpg) | ![Element32](../Images/Element32.jpg) | 0 | 1 | 1 |
 | Element32-31 | Gear with Red Rotation Arrows | ![Element32](../Images/Element32.jpg) | ![Element31](../Images/Element31.jpg) | 0 | 1 | 1 |
 | Element33 | Vortex Portal | ![Element33](../Images/Later/Element33.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |

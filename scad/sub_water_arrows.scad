@@ -1,7 +1,7 @@
 // sub_water_arrows.scad — shared arrow geometry for the water tile family
 // (element55 straight, future right-turn/left-turn variants)
-// Requires caller to define: plate_w, plate_d, plate_h, pattern_h (see
-// sub_water_base_plate.scad)
+// Requires caller to define: plate_w, plate_d, plate_h, pattern_h, frame_h
+// (see sub_water_base_plate.scad)
 // Units: inches
 //
 // Ported from sub_belts.scad's arrow geometry with the belt/roller pattern
@@ -25,6 +25,11 @@
 // when right_turn is set, and curved_*() again mirrored across the tile's
 // vertical centerline when left_turn is set — there is only one curved
 // implementation, reused for both directions.
+//
+// The arrow sits at the TOP of the background_color layer (frame_h - pattern_h
+// to frame_h), not the top of the tile — the transparent_color cap stays
+// uncut above it, so the arrow glows under the transparent layer rather than
+// sitting on the tile's outer surface.
 
 arrow_w       = 1.4875;      // = sub_belts.scad belt_w(1.75) * 0.85
 arrow_shaft_w = 0.669375;    // = arrow_w * 0.45
@@ -83,7 +88,7 @@ module arrow_2d() {
 }
 
 module straight_arrow_fill() {
-    translate([0, 0, plate_h - pattern_h])
+    translate([0, 0, frame_h - pattern_h])
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, 0])
         linear_extrude(pattern_h)
@@ -103,7 +108,7 @@ module straight_arrow_fill() {
 }
 
 module straight_arrow_cutout() {
-    translate([0, 0, plate_h - pattern_h])
+    translate([0, 0, frame_h - pattern_h])
     if (!double_speed) {
         translate([plate_w / 2, arrow_y, -0.001])
         linear_extrude(pattern_h + 0.002)
@@ -123,7 +128,7 @@ module straight_arrow_cutout() {
 }
 
 module curved_arrow_fill() {
-    translate([0, 0, plate_h - pattern_h])
+    translate([0, 0, frame_h - pattern_h])
     if (!double_speed) {
         // Vertical segment: cx, from arc center up to arrowhead base
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve, 0])
@@ -244,7 +249,7 @@ module curved_arrow_fill() {
 }
 
 module curved_arrow_cutout() {
-    translate([0, 0, plate_h - pattern_h])
+    translate([0, 0, frame_h - pattern_h])
     if (!double_speed) {
         // Vertical segment cutout
         translate([cx - arrow_shaft_w/2, plate_d/2 + r_curve - 0.001, -0.001])
