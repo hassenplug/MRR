@@ -1,9 +1,9 @@
 // element55.scad — still water tile
 // Units: inches
 
-straight     = true;
+straight     = false;
 left_turn    = false;
-right_turn   = false;
+right_turn   = true;
 double_speed = false;
 show_transparent = true;  // if false, the transparent layer is omitted entirely — useful for
                           // debugging the underlying layers
