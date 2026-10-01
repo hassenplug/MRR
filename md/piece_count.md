@@ -31,10 +31,10 @@
 | Element42 | Void Tunnel (Hazard Border Variant A) | ![Element42](../Images/Later/Element42.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
 | Element43 | Void Tunnel (Hazard Border Variant B) | ![Element43](../Images/Later/Element43.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
 | Element55 | Water Texture | ![Element55](../Images/Element55.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   | 10 |
-| Element56 | Water Straight Arrow | ![Element56](../Images/Element56.jpg) | ![Element55](../Images/Element55.jpg) | 0 | 20 |   |
-| Element57 | Water Curved Arrow Right | ![Element57](../Images/Element57.jpg) | ![Element58](../Images/Element58.jpg) | 0 | 2 |   |
-| Element58 | Water Curved Arrow Round Pivot | ![Element58](../Images/Element58.jpg) | ![Element57](../Images/Element57.jpg) | 0 | 2 |   |
-| Element59 | Water Vortex | ![Element59](../Images/Element59.jpg) | ![Element55](../Images/Element55.jpg) | 0 | 1 |   |
+| Element56 | Water Straight Arrow | ![Element56](../Images/Element56.jpg) | ![Element55](../Images/Element0.jpg) | 0 | 20 |   |
+| Element57 | Water Curved Arrow Right | ![Element57](../Images/Element57.jpg) | ![Element58](../Images/Element0.jpg) | 0 | 2 |   |
+| Element58 | Water Curved Arrow Round Pivot | ![Element58](../Images/Element58.jpg) | ![Element57](../Images/Element0.jpg) | 0 | 2 |   |
+| Element59 | Water Vortex | ![Element59](../Images/Element59.jpg) | ![Element55](../Images/Element0.jpg) | 0 | 1 |   |
 | Element61 | Lightning Burst | ![Element61](../Images/Element61.jpg) | ![Element0](../Images/Element0.jpg) | 0 | 2 |   |
 | Element70 | Control Dial | ![Element70](../Images/Later/Element70.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |
 | Element80 | Fire / Explosion | ![Element80](../Images/Later/Element80.jpg) | ![Element0](../Images/Element0.jpg) | 0 |   |   |

@@ -1,4 +1,7 @@
 """
+
+Use generate_3mf.py to build 3MF files for all elements listed in md/piece_count.md.
+
 build_all.py
 Reads md/piece_count.md and builds 3MF files for all elements
 where "Need to Print" > 0 and both top and bottom SCAD files exist.
@@ -165,5 +168,5 @@ def main():
           f"{skipped_missing} skipped (missing SCAD), {skipped_no_need} skipped (no print need)")
 
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+    #main()
