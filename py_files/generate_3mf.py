@@ -2,7 +2,8 @@
 generate_3mf.py
 Iterates every scad/element*.scad file (sub_*.scad shared-include files are
 never matched by that glob, so they're skipped automatically) and, for any
-that don't already have a matching 3mf/<stem>.3mf, builds it by running
+that don't already have a matching 3mf/<stem>.3mf, or whose scad file is
+newer than that 3mf, builds it by running
 scad_to_3mf.py and generates its top/bottom preview PNGs via
 render_top_views.py.
 
@@ -56,9 +57,9 @@ def main():
         out_stem = re.sub(r'-u', '', stem, flags=re.IGNORECASE)
         out_3mf  = OUT_DIR / f"{out_stem}.3mf"
 
-        if out_3mf.exists():
+        if out_3mf.exists() and scad_path.stat().st_mtime <= out_3mf.stat().st_mtime:
             if not quiet:
-                print(f"Skipping {stem}: {out_3mf.relative_to(BASE)} already exists")
+                print(f"Skipping {stem}: {out_3mf.relative_to(BASE)} is up to date")
             skipped += 1
             continue
 
@@ -84,7 +85,7 @@ def main():
 
         built += 1
 
-    print(f"\nDone: {built} built, {skipped} skipped (already exists), {failed} failed")
+    print(f"\nDone: {built} built, {skipped} skipped (up to date), {failed} failed")
 
 
 if __name__ == "__main__":

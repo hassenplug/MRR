@@ -11,7 +11,7 @@ show_transparent = true;  // if false, the transparent layer is omitted entirely
 include <sub_water_base_plate.scad>
 include <sub_water_arrows.scad>
 
-plate_colors = [undef, undef, "lightblue", "lightblue", undef, undef];
+plate_colors = [undef, undef, undef, undef, "lightblue", "lightblue"];
 
 arrow_color  = "black";
 background_color = "blue";
