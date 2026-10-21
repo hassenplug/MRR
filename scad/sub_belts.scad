@@ -29,6 +29,15 @@
 // vertical centerline when left_turn is set — there is only one curved
 // implementation, reused for both directions.
 //
+// When straight is also set, curved_roller_*() is called with only_outer = true:
+// the straight bars already cover every row, so each turn side contributes just
+// its outermost entry column (i = roller_count - 1) plus the 45° corner bar at
+// the upper inside corner — no horizontal bars or arc radial bars. Together with
+// the turn-side clipping in straight_roller_*() (upper-half rows other than the
+// last stop at the straight belt's edge), the upper inside corner then has the
+// same 3 rollers as a pure turn tile's: outer horizontal bar, 45° bar, entry
+// column. The lower inside corner is left as it was.
+//
 // element11/21 (right-turn) and element12/22 (left-turn) therefore share
 // identical geometry; element12/22 differ only in which flag is set (no
 // separate mirrored assembly file needed).
@@ -43,6 +52,13 @@ roller_inset  = plate_w / 20;
 roller_x_lo   = 2 * roller_inset;
 roller_x_hi   = plate_w - 2 * roller_inset;
 roller_y_step = (plate_w - 2 * roller_inset) / 12;
+
+// Left + right turns with no straight belt (element15): the two curved roller sets
+// overlap, so each side keeps only its outer horizontal row, a 45° corner bar, and
+// the roller_count/2 outermost vertical columns (6 per side, center column omitted)
+// — no arc radial bars.
+both_turns = right_turn && left_turn && !straight;
+both_first_col = floor(roller_count / 2) + 1;
 
 b_L = plate_w / 2 - belt_half;
 b_R = plate_w / 2 + belt_half;
@@ -138,21 +154,25 @@ module straight_roller_slots() {
     translate([0, 0, plate_h - pattern_h])
     for (i = [0:roller_count - 1]) {
         cy = roller_inset + i * roller_y_step;
+        clip_row = (cy > plate_d / 2 && i != roller_count - 1);
+        xl = (left_turn  && clip_row) ? b_L : roller_x_lo;
+        xh = (right_turn && clip_row) ? b_R : roller_x_hi;
         translate([0, 0, -0.001])
         hull() {
-            translate([roller_x_lo + roller_r, cy, 0])
+            translate([xl + roller_r, cy, 0])
                 cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
-            translate([roller_x_hi - roller_r, cy, 0])
+            translate([xh - roller_r, cy, 0])
                 cylinder(h = pattern_h + 0.002, r = roller_r, $fn = 20);
         }
     }
 }
 
-module curved_roller_slots() {
+module curved_roller_slots(only_outer = false) {
     translate([0, 0, plate_h - pattern_h]) {
     // a. Horizontal bars — top-section only, right-clipped; i=12 full-width
     for (i = [0:roller_count - 1]) {
-        if (roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
+        if (!only_outer && (!both_turns || i == roller_count - 1)
+            && roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
             translate([0, 0, -0.001])
             hull() {
                 translate([roller_x_lo + roller_r,
@@ -166,7 +186,8 @@ module curved_roller_slots() {
     }
     // b. Vertical entry bars — right side; skip if rx < cx_r
     for (i = [0:roller_count - 1]) {
-        if (roller_inset + i * roller_y_step >= cx_r) {
+        if ((both_turns ? i >= both_first_col : roller_inset + i * roller_y_step >= cx_r)
+            && (!only_outer || i == roller_count - 1)) {
             y_hi = (i == roller_count - 1) ? plate_d - roller_x_lo : plate_d/2 + belt_half;
             translate([0, 0, -0.001])
             hull() {
@@ -179,7 +200,7 @@ module curved_roller_slots() {
     }
     // c. Arc radial bars — 11 bars, center (cx_r, plate_d/2 + r_curve), 180°–270°
     r_outer_bars = r_outer + nub;
-    for (k = [0:10]) {
+    if (!only_outer && !both_turns) for (k = [0:10]) {
         theta = 180 + 2.25 + k * (85.5 / 10);
         translate([cx_r, plate_d/2 + r_curve, 0])
         rotate([0, 0, theta])
@@ -205,8 +226,8 @@ module curved_roller_slots() {
 
 module roller_slots() {
     if (straight)   straight_roller_slots();
-    if (right_turn) curved_roller_slots();
-    if (left_turn)  mirrored() curved_roller_slots();
+    if (right_turn) curved_roller_slots(only_outer = straight);
+    if (left_turn)  mirrored() curved_roller_slots(only_outer = straight);
 }
 
 // ── Rollers (filled, colored) ───────────────────────────────────────────────────
@@ -215,20 +236,24 @@ module straight_roller_bars() {
     translate([0, 0, plate_h - pattern_h])
     for (i = [0:roller_count - 1]) {
         cy = roller_inset + i * roller_y_step;
+        clip_row = (cy > plate_d / 2 && i != roller_count - 1);
+        xl = (left_turn  && clip_row) ? b_L : roller_x_lo;
+        xh = (right_turn && clip_row) ? b_R : roller_x_hi;
         hull() {
-            translate([roller_x_lo + roller_r, cy, 0])
+            translate([xl + roller_r, cy, 0])
                 cylinder(h = pattern_h, r = roller_r, $fn = 20);
-            translate([roller_x_hi - roller_r, cy, 0])
+            translate([xh - roller_r, cy, 0])
                 cylinder(h = pattern_h, r = roller_r, $fn = 20);
         }
     }
 }
 
-module curved_roller_bars() {
+module curved_roller_bars(only_outer = false) {
     translate([0, 0, plate_h - pattern_h]) {
     // a. Horizontal bars
     for (i = [0:roller_count - 1]) {
-        if (roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
+        if (!only_outer && (!both_turns || i == roller_count - 1)
+            && roller_inset + i * roller_y_step >= y_arc_ctr - roller_y_step) {
             hull() {
                 translate([roller_x_lo + roller_r,
                            roller_inset + i * roller_y_step, 0])
@@ -241,7 +266,8 @@ module curved_roller_bars() {
     }
     // b. Vertical entry bars
     for (i = [0:roller_count - 1]) {
-        if (roller_inset + i * roller_y_step >= cx_r) {
+        if ((both_turns ? i >= both_first_col : roller_inset + i * roller_y_step >= cx_r)
+            && (!only_outer || i == roller_count - 1)) {
             y_hi = (i == roller_count - 1) ? plate_d - roller_x_lo : plate_d/2 + belt_half;
             hull() {
                 translate([roller_inset + i * roller_y_step, roller_x_lo + roller_r, 0])
@@ -253,7 +279,7 @@ module curved_roller_bars() {
     }
     // c. Arc radial bars
     r_outer_bars = r_outer + nub;
-    for (k = [0:10]) {
+    if (!only_outer && !both_turns) for (k = [0:10]) {
         theta = 180 + 2.25 + k * (85.5 / 10);
         translate([cx_r, plate_d/2 + r_curve, 0])
         rotate([0, 0, theta])
@@ -280,8 +306,8 @@ module rollers() {
     difference() {
         union() {
             if (straight)   straight_roller_bars();
-            if (right_turn) curved_roller_bars();
-            if (left_turn)  mirrored() curved_roller_bars();
+            if (right_turn) curved_roller_bars(only_outer = straight);
+            if (left_turn)  mirrored() curved_roller_bars(only_outer = straight);
         }
         belt_cutout();
     }
@@ -299,6 +325,73 @@ module arrow_2d() {
         [-arrow_w / 2,       arrow_shaft_h],
         [-arrow_shaft_w / 2, arrow_shaft_h]
     ]);
+}
+
+// ── Merged arrow (single-speed straight + turn) ────────────────────────────────
+// Per-path outlines would draw each path's shaft edges through the others'
+// hollow interiors. Instead each path is a solid 2D region; the regions are
+// unioned and a single outline (region minus its inset) is drawn, so the
+// inside of the combined arrow is one continuous empty area.
+
+merged_arrows = !double_speed && ((straight && (right_turn || left_turn)) || both_turns);
+
+module straight_arrow_solid_2d() {
+    translate([plate_w / 2, arrow_y]) arrow_2d();
+}
+
+module curved_arrow_solid_2d() {
+    ctr_y = plate_d / 2 + r_curve;
+    r_hi  = r_curve + arrow_shaft_w / 2;
+    // Vertical segment: arc center up to arrowhead base
+    translate([cx - arrow_shaft_w / 2, ctr_y])
+        square([arrow_shaft_w, y_merge - ctr_y]);
+    // Arc shaft, lower-left quadrant (180°–270°)
+    translate([cx_r, ctr_y])
+    intersection() {
+        difference() {
+            circle(r = r_hi, $fn = 120);
+            circle(r = r_curve - arrow_shaft_w / 2, $fn = 120);
+        }
+        translate([-r_hi, -r_hi]) square([r_hi, r_hi]);
+    }
+    // Horizontal segment (its far edge is the end cap)
+    translate([cx_r, plate_d / 2 - arrow_shaft_w / 2])
+        square([h_straight, arrow_shaft_w]);
+    // Arrowhead only
+    translate([cx, arrow_y])
+    intersection() {
+        arrow_2d();
+        translate([-arrow_w / 2, arrow_shaft_h]) square([arrow_w, arrow_head_h]);
+    }
+}
+
+module mirrored_2d() {
+    translate([plate_w, 0]) mirror([1, 0]) children();
+}
+
+module merged_arrow_solid_2d() {
+    if (straight)   straight_arrow_solid_2d();
+    if (right_turn) curved_arrow_solid_2d();
+    if (left_turn)  mirrored_2d() curved_arrow_solid_2d();
+}
+
+module merged_arrow_outline_2d() {
+    difference() {
+        merged_arrow_solid_2d();
+        offset(delta = -arrow_outline) merged_arrow_solid_2d();
+    }
+}
+
+module merged_arrow_fill() {
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
+        merged_arrow_outline_2d();
+}
+
+module merged_arrow_cutout() {
+    translate([0, 0, plate_h - pattern_h - 0.001])
+    linear_extrude(pattern_h + 0.002)
+        merged_arrow_outline_2d();
 }
 
 module straight_arrow_fill() {
@@ -583,9 +676,12 @@ module curved_arrow_cutout() {
 module arrow() {
     color(arrow_color)
     union() {
-        if (straight)   straight_arrow_fill();
-        if (right_turn) curved_arrow_fill();
-        if (left_turn)  mirrored() curved_arrow_fill();
+        if (merged_arrows) merged_arrow_fill();
+        else {
+            if (straight)   straight_arrow_fill();
+            if (right_turn) curved_arrow_fill();
+            if (left_turn)  mirrored() curved_arrow_fill();
+        }
     }
 }
 
@@ -629,9 +725,12 @@ module belt() {
             if (left_turn)  mirrored() curved_belt_base();
         }
         union() {
-            if (straight)   straight_arrow_cutout();
-            if (right_turn) curved_arrow_cutout();
-            if (left_turn)  mirrored() curved_arrow_cutout();
+            if (merged_arrows) merged_arrow_cutout();
+            else {
+                if (straight)   straight_arrow_cutout();
+                if (right_turn) curved_arrow_cutout();
+                if (left_turn)  mirrored() curved_arrow_cutout();
+            }
         }
     }
 }

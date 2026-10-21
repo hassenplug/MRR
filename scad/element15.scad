@@ -1,4 +1,4 @@
-// element12.scad — left-turn belt tile (mirror of element11)
+// element15.scad — left-turn belt tile (mirror of element11)
 // Units: inches
 
 straight     = false;

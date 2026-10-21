@@ -1,10 +1,10 @@
-// element12.scad — left-turn belt tile (mirror of element11)
+// element14.scad — left-turn belt tile (mirror of element11)
 // Units: inches
 
 straight     = true;
 left_turn    = false;
 right_turn   = true;
-double_speed = false;
+double_speed = false; 
 
 include <sub_base_plate.scad>
 include <sub_belts.scad>
