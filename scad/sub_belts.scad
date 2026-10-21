@@ -315,16 +315,60 @@ module rollers() {
 
 // ── Arrow shapes ────────────────────────────────────────────────────────────────
 
-module arrow_2d() {
+module arrow_2d(sh = arrow_shaft_h) {
     polygon([
         [-arrow_shaft_w / 2, 0],
         [ arrow_shaft_w / 2, 0],
-        [ arrow_shaft_w / 2, arrow_shaft_h],
-        [ arrow_w / 2,       arrow_shaft_h],
-        [ 0,                 arrow_h],
-        [-arrow_w / 2,       arrow_shaft_h],
-        [-arrow_shaft_w / 2, arrow_shaft_h]
+        [ arrow_shaft_w / 2, sh],
+        [ arrow_w / 2,       sh],
+        [ 0,                 sh + arrow_head_h],
+        [-arrow_w / 2,       sh],
+        [-arrow_shaft_w / 2, sh]
     ]);
+}
+
+module arrow_outline_2d(sh = arrow_shaft_h) {
+    difference() {
+        arrow_2d(sh);
+        offset(delta = -arrow_outline) arrow_2d(sh);
+    }
+}
+
+// ── Multi-input double-speed arrows ───────────────────────────────────────────
+// Double-speed tiles with more than one input (straight + turn, or left + right)
+// draw one arrow per input instead of the turn tiles' curved arrow: the top arrow
+// is the straight tile's (element20) upper arrow, the straight input's second arrow
+// is its lower arrow, and each side input's second arrow is element21's leftward
+// arrow (mirrored to a rightward one for left_turn, as in element22).
+
+multi_double = double_speed && (straight || both_turns);
+
+top_shaft_h  = (plate_d * 3/4 - arrow_gap) / 2 - arrow_head_h + 0.05;
+top_arrow_h  = top_shaft_h + arrow_head_h;
+top_arrow_y  = arrow_tip_y - top_arrow_h;
+low_arrow_y  = top_arrow_y - arrow_gap - top_arrow_h;
+side_shaft_h = 0.25;
+
+module multi_double_arrows_2d() {
+    translate([plate_w / 2, top_arrow_y]) arrow_outline_2d(top_shaft_h);
+    if (straight)
+        translate([plate_w / 2, low_arrow_y]) arrow_outline_2d(top_shaft_h);
+    if (right_turn)
+        translate([arrow_lf_x, arrow_lf_y]) rotate([0, 0, 90]) arrow_outline_2d(side_shaft_h);
+    if (left_turn)
+        translate([plate_w - arrow_lf_x, arrow_lf_y]) rotate([0, 0, -90]) arrow_outline_2d(side_shaft_h);
+}
+
+module multi_double_arrow_fill() {
+    translate([0, 0, plate_h - pattern_h])
+    linear_extrude(pattern_h)
+        multi_double_arrows_2d();
+}
+
+module multi_double_arrow_cutout() {
+    translate([0, 0, plate_h - pattern_h - 0.001])
+    linear_extrude(pattern_h + 0.002)
+        multi_double_arrows_2d();
 }
 
 // ── Merged arrow (single-speed straight + turn) ────────────────────────────────
@@ -677,6 +721,7 @@ module arrow() {
     color(arrow_color)
     union() {
         if (merged_arrows) merged_arrow_fill();
+        else if (multi_double) multi_double_arrow_fill();
         else {
             if (straight)   straight_arrow_fill();
             if (right_turn) curved_arrow_fill();
@@ -726,6 +771,7 @@ module belt() {
         }
         union() {
             if (merged_arrows) merged_arrow_cutout();
+            else if (multi_double) multi_double_arrow_cutout();
             else {
                 if (straight)   straight_arrow_cutout();
                 if (right_turn) curved_arrow_cutout();

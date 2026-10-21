@@ -1,4 +1,4 @@
-// element22.scad — left-turn double-speed belt tile (mirror of element21)
+// element23.scad — straight + left-turn double-speed belt tile (double-speed counterpart of element13)
 // Units: inches
 
 straight     = true;
@@ -9,10 +9,9 @@ double_speed = true;
 include <sub_base_plate.scad>
 include <sub_belts.scad>
 
-// Edge-ID colors are the reverse of element21's array: sub_belts.scad now
-// mirrors the belt/roller/arrow geometry internally (left_turn), so the
-// frame's color-coded edges must be manually reversed to match — the whole
-// tile is no longer wrapped in a geometric mirror() to do this for free.
+// Edge-ID colors match element13's array, in blue. sub_belts.scad mirrors the
+// belt/roller/arrow geometry internally (left_turn), so the frame's color-coded
+// edges must be set per tile rather than via a geometric mirror().
 plate_colors = ["blue", "blue", "blue", "blue", undef, undef];
 
 roller_color = "blue";
